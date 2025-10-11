@@ -30,9 +30,18 @@
       </div>
     </div>
 
-    <?php if (! empty($artikel['gambar'])): ?>
+    <?php if (! empty($artikel['gambar'])):
+      $gambarUrl = $artikel['gambar'];
+      if (! preg_match('#^https?://#i', $gambarUrl)) {
+          $cleanImage = str_replace('\\', '/', ltrim($gambarUrl, '/'));
+          if (strpos($cleanImage, 'uploads/') === 0) {
+              $cleanImage = substr($cleanImage, strlen('uploads/')) ?: '';
+          }
+          $gambarUrl = base_url('/uploads/' . ltrim($cleanImage, '/'));
+      }
+    ?>
       <div class="mb-8 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-        <img src="<?= esc($artikel['gambar']); ?>" alt="Gambar artikel"
+        <img src="<?= esc($gambarUrl); ?>" alt="Gambar artikel"
           class="h-64 w-full object-cover" />
       </div>
     <?php endif; ?>

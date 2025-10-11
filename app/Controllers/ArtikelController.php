@@ -62,7 +62,7 @@ class ArtikelController extends BaseController
             'isi'         => 'required',
             'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
             'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'permit_empty|max_length[255]',
+            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
@@ -72,11 +72,14 @@ class ArtikelController extends BaseController
         $judul = (string) $this->request->getPost('judul');
         $slug  = $this->generateSlug($judul);
 
+        $gambarFile     = $this->request->getFile('gambar');
+        $gambarFilename = $this->handleUploadedImage($gambarFile);
+
         $this->artikelModel->insert([
             'judul'       => $judul,
             'slug'        => $slug,
             'isi'         => (string) $this->request->getPost('isi'),
-            'gambar'      => $this->request->getPost('gambar') ?: null,
+            'gambar'      => $gambarFilename,
             'kategori_id' => (int) $this->request->getPost('kategori_id'),
             'penulis_id'  => (int) $this->request->getPost('penulis_id'),
         ]);
@@ -131,7 +134,7 @@ class ArtikelController extends BaseController
             'isi'         => 'required',
             'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
             'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'permit_empty|max_length[255]',
+            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
@@ -145,14 +148,22 @@ class ArtikelController extends BaseController
             $slug = $this->generateSlug($judul, $id);
         }
 
-        $this->artikelModel->update($id, [
+        $gambarFile     = $this->request->getFile('gambar');
+        $gambarFilename = $this->handleUploadedImage($gambarFile, $artikel['gambar'] ?? null);
+
+        $updateData = [
             'judul'       => $judul,
             'slug'        => $slug,
             'isi'         => (string) $this->request->getPost('isi'),
-            'gambar'      => $this->request->getPost('gambar') ?: null,
             'kategori_id' => (int) $this->request->getPost('kategori_id'),
             'penulis_id'  => (int) $this->request->getPost('penulis_id'),
-        ]);
+        ];
+
+        if ($gambarFilename !== null) {
+            $updateData['gambar'] = $gambarFilename;
+        }
+
+        $this->artikelModel->update($id, $updateData);
 
         return redirect()->to('/Admin/artikel')->with('success', 'Artikel berhasil diperbarui.');
     }
@@ -163,6 +174,10 @@ class ArtikelController extends BaseController
 
         if (! $artikel) {
             throw PageNotFoundException::forPageNotFound('Artikel tidak ditemukan.');
+        }
+
+        if (! empty($artikel['gambar'])) {
+            $this->deleteUploadedImage($artikel['gambar']);
         }
 
         $this->artikelModel->delete($id);
@@ -194,5 +209,54 @@ class ArtikelController extends BaseController
         }
 
         return $builder->countAllResults() > 0;
+    }
+
+    private function handleUploadedImage($file, ?string $existingFilename = null): ?string
+    {
+        if (! $file || $file->getError() === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        if (! $file->isValid()) {
+            return $existingFilename;
+        }
+
+        $uploadPath = ROOTPATH . 'public/uploads';
+
+        if (! is_dir($uploadPath)) {
+            mkdir($uploadPath, 0775, true);
+        }
+
+        $newName = $file->getRandomName();
+        $file->move($uploadPath, $newName, true);
+
+        if ($existingFilename) {
+            $this->deleteUploadedImage($existingFilename);
+        }
+
+        return $newName;
+    }
+
+    private function deleteUploadedImage(?string $filename): void
+    {
+        if (empty($filename) || preg_match('#^https?://#i', (string) $filename)) {
+            return;
+        }
+
+        $cleanName = str_replace('\\', '/', ltrim((string) $filename, '/'));
+
+        if (strpos($cleanName, 'uploads/') === 0) {
+            $cleanName = substr($cleanName, strlen('uploads/')) ?: '';
+        }
+
+        if ($cleanName === '') {
+            return;
+        }
+
+        $filePath = ROOTPATH . 'public/uploads/' . $cleanName;
+
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
     }
 }

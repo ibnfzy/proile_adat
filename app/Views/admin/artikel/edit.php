@@ -9,7 +9,7 @@
 
   <?php $errors = session('errors') ?? []; ?>
 
-  <form action="/Admin/artikel/<?= esc($artikel['id']); ?>/update" method="post" class="space-y-6">
+  <form action="/Admin/artikel/<?= esc($artikel['id']); ?>/update" method="post" class="space-y-6" enctype="multipart/form-data">
     <?= csrf_field(); ?>
 
     <div>
@@ -57,14 +57,29 @@
     </div>
 
     <div>
-      <label for="gambar" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">URL / Path Gambar</label>
-      <input type="text" name="gambar" id="gambar" value="<?= old('gambar', $artikel['gambar']); ?>"
-        class="w-full rounded-xl border <?= isset($errors['gambar']) ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'; ?> bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:bg-gray-900 dark:text-gray-100"
-        placeholder="Contoh: uploads/artikel/panen-raya.jpg" />
+      <label for="gambar" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Gambar Artikel</label>
+      <input type="file" name="gambar" id="gambar" accept="image/jpeg,image/png"
+        class="w-full cursor-pointer rounded-xl border <?= isset($errors['gambar']) ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'; ?> bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:bg-gray-900 dark:text-gray-100" />
       <?php if (isset($errors['gambar'])): ?>
         <p class="mt-2 text-sm text-red-600 dark:text-red-400"><?= esc($errors['gambar']); ?></p>
       <?php else: ?>
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Opsional. Isi jika ingin menampilkan gambar pada artikel.</p>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Biarkan kosong jika tidak ingin mengganti gambar. Format yang diizinkan: JPG atau PNG.</p>
+      <?php endif; ?>
+      <?php if (! empty($artikel['gambar'])): ?>
+        <?php
+        $currentImage = $artikel['gambar'];
+        if (! preg_match('#^https?://#i', $currentImage)) {
+            $cleanImage = str_replace('\\', '/', ltrim($currentImage, '/'));
+            if (strpos($cleanImage, 'uploads/') === 0) {
+              $cleanImage = substr($cleanImage, strlen('uploads/')) ?: '';
+            }
+            $currentImage = base_url('/uploads/' . ltrim($cleanImage, '/'));
+        }
+        ?>
+        <div class="mt-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gambar saat ini</p>
+          <img src="<?= esc($currentImage); ?>" alt="Gambar artikel saat ini" class="mt-2 h-32 w-32 rounded-lg object-cover" />
+        </div>
       <?php endif; ?>
     </div>
 
