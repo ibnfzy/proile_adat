@@ -13,7 +13,7 @@ class Informasi extends Migration
             'judul'        => ['type' => 'VARCHAR', 'constraint' => '255'],
             'slug'         => ['type' => 'VARCHAR', 'constraint' => '191', 'unique' => true],
             'konten'       => ['type' => 'TEXT'],
-            'gambar'       => ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true],
+            'gambar'       => ['type' => 'TEXT', 'null' => true],
             'created_at'   => ['type' => 'DATETIME', 'null' => true],
             'updated_at'   => ['type' => 'DATETIME', 'null' => true],
         ]);
