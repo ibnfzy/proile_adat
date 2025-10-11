@@ -7,33 +7,30 @@
     class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-8 shadow-lg shadow-brand-500/5 backdrop-blur-xl dark:border-gray-800 dark:bg-white/[0.03] sm:p-10 lg:p-12">
     <div class="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
       <div class="max-w-xl space-y-3">
-        <span class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/10 dark:text-brand-100">
+        <span
+          class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/10 dark:text-brand-100">
           Ringkasan singkat
         </span>
         <h1 class="text-3xl font-semibold leading-tight text-gray-900 dark:text-white/90 sm:text-4xl">
           Selamat datang di Dashboard Admin
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 sm:text-base">
-          Pantau perkembangan artikel, informasi penting, dan galeri foto dalam satu tempat. Gunakan ringkasan di bawah ini untuk melihat sekilas performa konten terbaru Anda.
+          Pantau perkembangan artikel, informasi penting, dan galeri foto dalam satu tempat. Gunakan ringkasan di bawah
+          ini untuk melihat sekilas performa konten terbaru Anda.
         </p>
       </div>
-      <div class="relative">
-        <div class="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-2xl shadow-brand-500/40 sm:h-28 sm:w-28">
-          <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 3L2 9L12 15L22 9L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M5 19H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M12 15V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-      </div>
     </div>
-    <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-brand-500/10 to-brand-500/0 blur-3xl"></div>
+    <div
+      class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-brand-500/10 to-brand-500/0 blur-3xl">
+    </div>
   </section>
 
   <section class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
     <article
       class="group relative overflow-hidden rounded-3xl border border-blue-200/60 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 p-7 text-white shadow-lg shadow-blue-500/30">
-      <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110"></div>
+      <div
+        class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110">
+      </div>
       <div class="relative z-10 flex items-start justify-between gap-6">
         <div class="space-y-4">
           <p class="text-sm font-medium uppercase tracking-wide text-white/70">Total Artikel</p>
@@ -61,7 +58,9 @@
 
     <article
       class="group relative overflow-hidden rounded-3xl border border-purple-200/60 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 p-7 text-white shadow-lg shadow-purple-500/30">
-      <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110"></div>
+      <div
+        class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110">
+      </div>
       <div class="relative z-10 flex items-start justify-between gap-6">
         <div class="space-y-4">
           <p class="text-sm font-medium uppercase tracking-wide text-white/70">Total Informasi</p>
@@ -89,7 +88,9 @@
 
     <article
       class="group relative overflow-hidden rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-7 text-white shadow-lg shadow-emerald-500/30">
-      <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110"></div>
+      <div
+        class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:scale-110">
+      </div>
       <div class="relative z-10 flex items-start justify-between gap-6">
         <div class="space-y-4">
           <p class="text-sm font-medium uppercase tracking-wide text-white/70">Total Foto Galeri</p>
