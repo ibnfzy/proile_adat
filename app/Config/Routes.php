@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
+$routes->get('/galeri', 'GaleriController::publicIndex');
+
 $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('/', 'AdminController::index');
 
@@ -35,4 +37,12 @@ $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('informasi/(:num)/edit', 'InformasiController::edit/$1');
   $routes->post('informasi/(:num)/update', 'InformasiController::update/$1');
   $routes->post('informasi/(:num)/delete', 'InformasiController::delete/$1');
+
+  // Galeri
+  $routes->get('galeri', 'GaleriController::index');
+  $routes->get('galeri/create', 'GaleriController::create');
+  $routes->post('galeri/store', 'GaleriController::store');
+  $routes->get('galeri/(:num)/edit', 'GaleriController::edit/$1');
+  $routes->post('galeri/(:num)/update', 'GaleriController::update/$1');
+  $routes->post('galeri/(:num)/delete', 'GaleriController::delete/$1');
 });
