@@ -77,7 +77,7 @@
           </li>
 
           <li>
-            <a href="/Admin/" class="menu-item group">
+            <a href="/Admin/informasi" class="menu-item group">
 
               <svg class="menu-item-icon-inactive" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 640 640">

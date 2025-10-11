@@ -26,4 +26,13 @@ $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('artikel/(:num)/edit', 'ArtikelController::edit/$1');
   $routes->post('artikel/(:num)/update', 'ArtikelController::update/$1');
   $routes->post('artikel/(:num)/delete', 'ArtikelController::delete/$1');
+
+  // Informasi
+  $routes->get('informasi', 'InformasiController::index');
+  $routes->get('informasi/create', 'InformasiController::create');
+  $routes->post('informasi/store', 'InformasiController::store');
+  $routes->get('informasi/(:num)', 'InformasiController::show/$1');
+  $routes->get('informasi/(:num)/edit', 'InformasiController::edit/$1');
+  $routes->post('informasi/(:num)/update', 'InformasiController::update/$1');
+  $routes->post('informasi/(:num)/delete', 'InformasiController::delete/$1');
 });
