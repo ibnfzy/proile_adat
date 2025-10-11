@@ -50,7 +50,7 @@
       <main>
         <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
           <!-- Breadcrumb Start -->
-          <div x-data="{ pageName: `Blank Page`}">
+          <div x-data="{ pageName: `<?= esc($pageTitle ?? 'Blank Page') ?>`}">
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="pageName"></h2>
 
