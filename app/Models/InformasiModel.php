@@ -20,8 +20,8 @@ class InformasiModel extends Model
         'emoji',
     ];
 
-    protected bool $useTimestamps = true;
-    protected string $dateFormat  = 'datetime';
+    protected $useTimestamps = true;
+    protected $dateFormat  = 'datetime';
     protected $createdField       = 'created_at';
     protected $updatedField       = 'updated_at';
 }
