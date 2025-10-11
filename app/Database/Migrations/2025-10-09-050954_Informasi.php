@@ -11,7 +11,7 @@ class Informasi extends Migration
         $this->forge->addField([
             'id'           => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
             'judul'        => ['type' => 'VARCHAR', 'constraint' => '255'],
-            'slug'         => ['type' => 'VARCHAR', 'constraint' => '255', 'unique' => true],
+            'slug'         => ['type' => 'VARCHAR', 'constraint' => '191', 'unique' => true],
             'konten'       => ['type' => 'TEXT'],
             'gambar'       => ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true],
             'created_at'   => ['type' => 'DATETIME', 'null' => true],

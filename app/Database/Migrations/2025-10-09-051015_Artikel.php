@@ -11,7 +11,7 @@ class Artikel extends Migration
         $this->forge->addField([
             'id'               => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
             'judul'            => ['type' => 'VARCHAR', 'constraint' => '255'],
-            'slug'             => ['type' => 'VARCHAR', 'constraint' => '255', 'unique' => true],
+            'slug'             => ['type' => 'VARCHAR', 'constraint' => '191', 'unique' => true],
             'isi'              => ['type' => 'TEXT'],
             'gambar'           => ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true],
             'kategori_id'      => ['type' => 'INT', 'unsigned' => true],
