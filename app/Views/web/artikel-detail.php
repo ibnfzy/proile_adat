@@ -5,9 +5,9 @@
 <!-- ===== Breadcrumb ===== -->
 <section class="breadcrumb">
   <div class="container">
-    <a href="index.html">Home</a>
+    <a href="<?= site_url('/') ?>">Home</a>
     <span>/</span>
-    <a href="artikel.html">Artikel</a>
+    <a href="<?= site_url('artikel') ?>">Artikel</a>
     <span>/</span>
     <span id="breadcrumbTitle">Detail</span>
   </div>
