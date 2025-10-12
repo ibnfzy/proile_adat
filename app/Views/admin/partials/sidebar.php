@@ -109,7 +109,7 @@
           </li>
 
           <li>
-            <a href="/Admin/" class="menu-item group">
+            <button type="button" class="menu-item group" data-modal-target="settings-modal">
 
               <svg class="menu-item-icon-inactive" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 640 640">
@@ -122,7 +122,7 @@
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                 Pengaturan
               </span>
-            </a>
+            </button>
           </li>
 
           <li>
