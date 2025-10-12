@@ -52,10 +52,22 @@
 
     <div :class="menuToggle ? 'flex' : 'hidden'"
       class="shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none">
-      <div class="2xsm:gap-3 flex items-center gap-2">
-        <!-- Dark Mode Toggler -->
-        <!-- Dark Mode Toggler -->
-
+      <div class="flex flex-1 items-center justify-end gap-4">
+        <div class="hidden text-right text-sm text-gray-500 sm:block dark:text-gray-400">
+          <p class="font-medium text-gray-700 dark:text-white/80">Halo,
+            <span><?= esc(session('namaLengkap') ?? session('username') ?? 'Admin'); ?></span>
+          </p>
+          <p>Anda masuk sebagai <?= esc(session('role') ?? 'pengguna'); ?></p>
+        </div>
+        <a href="/logout"
+          class="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 dark:border-blue-500/40 dark:text-blue-300 dark:hover:bg-blue-500/10">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H9m0 0 3-3m-3 3 3 3" />
+          </svg>
+          Keluar
+        </a>
       </div>
 
     </div>

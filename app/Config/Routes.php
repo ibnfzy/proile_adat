@@ -9,6 +9,10 @@ $routes->get('/', 'Home::index');
 
 $routes->get('/galeri', 'GaleriController::publicIndex');
 
+$routes->get('/login', 'AuthController::login');
+$routes->post('/login', 'AuthController::authenticate');
+$routes->get('/logout', 'AuthController::logout');
+
 $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('/', 'AdminController::index');
 
