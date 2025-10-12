@@ -49,4 +49,7 @@ $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('galeri/(:num)/edit', 'GaleriController::edit/$1');
   $routes->post('galeri/(:num)/update', 'GaleriController::update/$1');
   $routes->post('galeri/(:num)/delete', 'GaleriController::delete/$1');
+
+  // Pengaturan Admin
+  $routes->post('pengaturan/update', 'AdminController::updateProfile');
 });
