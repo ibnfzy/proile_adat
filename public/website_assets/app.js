@@ -5,20 +5,59 @@
 // Set to true to enable API data fetching
 const ENABLE_API = true;
 
-// API endpoints (replace with actual endpoints when available)
-const BASE_URL = document
-  .querySelector('meta[name="base-url"]')
-  .getAttribute("content");
+// API and page endpoints
+const baseUrlMeta = document.querySelector('meta[name="base-url"]');
+const BASE_URL = normalizeBaseUrl(
+  baseUrlMeta ? baseUrlMeta.getAttribute("content") : "/"
+);
 
 const API_ENDPOINTS = {
-  artikel: `${BASE_URL}api/artikel`,
-  galeri: `${BASE_URL}api/galeri`,
-  informasi: `${BASE_URL}api/informasi`,
+  artikel: joinWithBase("api/artikel"),
+  galeri: joinWithBase("api/galeri"),
+  informasi: joinWithBase("api/informasi"),
+};
+
+const PAGE_URLS = {
+  home: BASE_URL,
+  artikelList: joinWithBase("artikel"),
+  artikelDetail: (id) =>
+    `${joinWithBase("artikel/detail")}?id=${encodeId(id)}`,
+  informasiList: joinWithBase("informasi"),
+  informasiDetail: (id) =>
+    `${joinWithBase("informasi/detail")}?id=${encodeId(id)}`,
 };
 // Simple in-memory caches to avoid repeated fetch calls
 let artikelDataCache = null;
 let galeriDataCache = null;
 let informasiDataCache = null;
+
+function normalizeBaseUrl(url) {
+  if (!url) {
+    return "/";
+  }
+
+  return url.endsWith("/") ? url : `${url}/`;
+}
+
+function joinWithBase(path = "") {
+  if (!path) {
+    return BASE_URL;
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  return `${BASE_URL}${path.replace(/^\/+/, "")}`;
+}
+
+function encodeId(value) {
+  if (value === null || typeof value === "undefined") {
+    return "";
+  }
+
+  return encodeURIComponent(value);
+}
 
 // ===== Mock Data =====
 const ARTIKEL_DATA = [
@@ -543,20 +582,12 @@ function initNavigation(isHomePage) {
   }
 
   navLinks.forEach((link) => {
-    const href = link.getAttribute("href") || "";
+    const scrollTarget = link.dataset.scrollTarget;
 
-    if (href === "#admin") {
+    if (isHomePage && scrollTarget) {
       link.addEventListener("click", (event) => {
         event.preventDefault();
-        alert("Halaman Admin akan tersedia setelah integrasi backend");
-      });
-      return;
-    }
-
-    if (isHomePage && href.startsWith("#") && !href.includes(".html")) {
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        const targetSection = document.querySelector(href);
+        const targetSection = document.querySelector(scrollTarget);
 
         if (!targetSection) {
           return;
@@ -569,7 +600,11 @@ function initNavigation(isHomePage) {
           behavior: "smooth",
         });
 
-        navLinks.forEach((navLink) => navLink.classList.remove("active"));
+        navLinks.forEach((navLink) => {
+          if (navLink.dataset.scrollTarget) {
+            navLink.classList.remove("active");
+          }
+        });
         link.classList.add("active");
 
         if (nav) {
@@ -599,13 +634,16 @@ function initNavigation(isHomePage) {
       });
 
       navLinks.forEach((link) => {
-        if (!link.getAttribute("href")?.startsWith("#")) {
+        const scrollTarget = link.dataset.scrollTarget;
+        if (!scrollTarget) {
           return;
         }
 
+        const normalizedTarget = scrollTarget.replace(/^#/, "");
+
         link.classList.toggle(
           "active",
-          link.getAttribute("href") === `#${currentSection}`
+          normalizedTarget === currentSection
         );
       });
     });
@@ -635,7 +673,7 @@ async function initHomePage() {
                     <div class="artikel-content">
                         <h3 class="artikel-title">${artikel.title}</h3>
                         <p class="artikel-excerpt">${artikel.excerpt}</p>
-                        <a href="artikel-detail.html?id=${artikel.id}" class="artikel-link">
+                        <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
                             Baca Selengkapnya →
                         </a>
                     </div>
@@ -709,9 +747,7 @@ async function initInformasiPage() {
                 <div class="informasi-content">
                     <h3 class="informasi-title">${info.title}</h3>
                     <p class="informasi-excerpt">${info.excerpt}</p>
-                    <a href="informasi-detail.html?id=${
-                      info.id
-                    }" class="informasi-link">
+                    <a href="${PAGE_URLS.informasiDetail(info.id)}" class="informasi-link">
                         Lihat Detail →
                     </a>
                 </div>
@@ -760,7 +796,7 @@ async function initInformasiDetailPage() {
                 ${informasi.content}
             </div>
             <div class="back-link">
-                <a href="informasi.html" class="btn btn-primary">← Kembali ke Informasi</a>
+                <a href="${PAGE_URLS.informasiList}" class="btn btn-primary">← Kembali ke Informasi</a>
             </div>
         `;
 
@@ -816,9 +852,7 @@ async function initArtikelPage() {
                         <span class="artikel-date">${formatDate(
                           artikel.date
                         )}</span>
-                        <a href="artikel-detail.html?id=${
-                          artikel.id
-                        }" class="artikel-link">
+                        <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
                             Baca Selengkapnya →
                         </a>
                     </div>
@@ -962,7 +996,7 @@ function renderRelatedArtikel(currentArtikel, artikelData = []) {
             <div class="artikel-content">
                 <h3 class="artikel-title">${artikel.title}</h3>
                 <p class="artikel-excerpt">${artikel.excerpt}</p>
-                <a href="artikel-detail.html?id=${artikel.id}" class="artikel-link">
+                <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
                     Baca Selengkapnya →
                 </a>
             </div>
@@ -1011,4 +1045,4 @@ document.addEventListener("DOMContentLoaded", () => {
   attachLightboxToImages(document);
 });
 
-// TODO: Replace mock data with real API integration once backend is ready.
+// Catatan: Data akan dimuat dari API backend ketika ENABLE_API bernilai true.

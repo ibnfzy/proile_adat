@@ -5,9 +5,19 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+$routes->get('/', 'WebsiteController::index');
+$routes->get('/informasi', 'WebsiteController::informasi');
+$routes->get('/informasi/detail', 'WebsiteController::informasiDetail');
+$routes->get('/artikel', 'WebsiteController::artikel');
+$routes->get('/artikel/detail', 'WebsiteController::artikelDetail');
 
 $routes->get('/galeri', 'GaleriController::publicIndex');
+
+$routes->group('api', static function (RouteCollection $routes) {
+    $routes->get('artikel', 'Api\WebsiteApiController::artikel');
+    $routes->get('informasi', 'Api\WebsiteApiController::informasi');
+    $routes->get('galeri', 'Api\WebsiteApiController::galeri');
+});
 
 $routes->get('/login', 'AuthController::login');
 $routes->post('/login', 'AuthController::authenticate');

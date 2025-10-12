@@ -9,8 +9,8 @@
     <h2 class="hero-title">Profil Adat & Budaya Kecamatan Nosu</h2>
     <p class="hero-subtitle">Mengenal adat istiadat dan budaya masyarakat Nosu, Kabupaten Mamasa.</p>
     <div class="hero-buttons">
-      <a href="informasi.html" class="btn btn-primary">Lihat Informasi</a>
-      <a href="artikel.html" class="btn btn-secondary">Lihat Artikel</a>
+      <a href="<?= site_url('informasi') ?>" class="btn btn-primary">Lihat Informasi</a>
+      <a href="<?= site_url('artikel') ?>" class="btn btn-secondary">Lihat Artikel</a>
     </div>
   </div>
 </section>
@@ -30,7 +30,7 @@
       <!-- Informasi cards will be loaded here by JavaScript -->
     </div>
     <div style="text-align: center; margin-top: 2rem;">
-      <a href="informasi.html" class="btn btn-primary">Lihat Semua Informasi</a>
+      <a href="<?= site_url('informasi') ?>" class="btn btn-primary">Lihat Semua Informasi</a>
     </div>
   </div>
 </section>
@@ -43,7 +43,7 @@
       <!-- Artikel cards will be loaded here by JavaScript -->
     </div>
     <div style="text-align: center; margin-top: 2rem;">
-      <a href="artikel.html" class="btn btn-primary">Lihat Semua Artikel</a>
+      <a href="<?= site_url('artikel') ?>" class="btn btn-primary">Lihat Semua Artikel</a>
     </div>
   </div>
 </section>
