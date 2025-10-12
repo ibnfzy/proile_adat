@@ -52,11 +52,12 @@ class AuthController extends BaseController
         }
 
         $this->session->set([
-            'userId'     => $user['id'],
-            'username'   => $user['username'],
-            'namaLengkap'=> $user['nama_lengkap'] ?? $user['username'],
-            'role'       => $user['role'] ?? null,
-            'isLoggedIn' => true,
+            'userId'      => $user['id'],
+            'username'    => $user['username'],
+            'namaLengkap' => $user['nama_lengkap'] ?? $user['username'],
+            'email'       => $user['email'] ?? null,
+            'role'        => $user['role'] ?? null,
+            'isLoggedIn'  => true,
         ]);
 
         return redirect()->to('/Admin')->with('message', 'Selamat datang kembali, ' . ($user['nama_lengkap'] ?? $user['username']) . '!');
