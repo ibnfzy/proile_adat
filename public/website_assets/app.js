@@ -26,6 +26,9 @@ const PAGE_URLS = {
   informasiDetail: (id) =>
     `${joinWithBase("informasi/detail")}?id=${encodeId(id)}`,
 };
+
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20600%20400%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23e5e7eb%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-size%3D%2232%22%20fill%3D%22%236b7280%22%3ETidak%20ada%20gambar%3C/text%3E%3C/svg%3E";
 // Simple in-memory caches to avoid repeated fetch calls
 let artikelDataCache = null;
 let galeriDataCache = null;
@@ -450,6 +453,23 @@ function attachLightboxToImages(scope = document) {
 }
 
 // ===== Helper Functions =====
+function getImageWithPlaceholder(imageUrl) {
+  if (typeof imageUrl !== "string") {
+    return PLACEHOLDER_IMAGE;
+  }
+
+  const trimmedUrl = imageUrl.trim();
+  if (
+    trimmedUrl === "" ||
+    trimmedUrl.toLowerCase() === "null" ||
+    trimmedUrl.toLowerCase() === "undefined"
+  ) {
+    return PLACEHOLDER_IMAGE;
+  }
+
+  return trimmedUrl;
+}
+
 function getCategoryName(category) {
   const categories = {
     adat: "Adat Istiadat",
@@ -668,8 +688,9 @@ async function initHomePage() {
       artikelData.slice(0, 3).forEach((artikel) => {
         const card = document.createElement("div");
         card.className = "artikel-card";
+        const imageUrl = getImageWithPlaceholder(artikel.image);
         card.innerHTML = `
-                    <img src="${artikel.image}" alt="${artikel.title}" class="artikel-image">
+                    <img src="${imageUrl}" alt="${artikel.title}" class="artikel-image">
                     <div class="artikel-content">
                         <h3 class="artikel-title">${artikel.title}</h3>
                         <p class="artikel-excerpt">${artikel.excerpt}</p>
@@ -696,8 +717,9 @@ async function initHomePage() {
       galeriData.forEach((item) => {
         const galeriItem = document.createElement("div");
         galeriItem.className = "galeri-item";
+        const imageUrl = getImageWithPlaceholder(item.image);
         galeriItem.innerHTML = `
-                    <img src="${item.image}" alt="${item.title}" class="galeri-image">
+                    <img src="${imageUrl}" alt="${item.title}" class="galeri-image">
                     <div class="galeri-overlay">
                         <h4 class="galeri-title">${item.title}</h4>
                     </div>
@@ -739,9 +761,10 @@ async function initInformasiPage() {
     informasiData.forEach((info) => {
       const card = document.createElement("div");
       card.className = "informasi-card";
+      const imageUrl = getImageWithPlaceholder(info.image);
       card.innerHTML = `
                 <div class="informasi-icon">${info.icon || ""}</div>
-                <img src="${info.image}" alt="${
+                <img src="${imageUrl}" alt="${
         info.title
       }" class="informasi-image">
                 <div class="informasi-content">
