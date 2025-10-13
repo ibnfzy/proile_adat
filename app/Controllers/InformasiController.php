@@ -47,7 +47,7 @@ class InformasiController extends BaseController
             'judul'  => 'required|min_length[3]|max_length[255]|is_unique[informasi.judul]',
             'konten' => 'required',
             'emoji'  => 'required|max_length[10]',
-            'gambar' => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
+            'gambar' => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
@@ -111,7 +111,7 @@ class InformasiController extends BaseController
             'judul'  => "required|min_length[3]|max_length[255]|is_unique[informasi.judul,id,{$id}]",
             'konten' => 'required',
             'emoji'  => 'required|max_length[10]',
-            'gambar' => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
+            'gambar' => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
