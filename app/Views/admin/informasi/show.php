@@ -33,9 +33,18 @@
         $gambarUrl = base_url('/uploads/' . ltrim($cleanImage, '/'));
     }
   ?>
-    <div class="mb-6 overflow-hidden rounded-xl border border-gray-200 shadow-sm dark:border-gray-800">
-      <img src="<?= esc($gambarUrl); ?>" alt="Gambar Informasi" class="h-72 w-full object-cover" />
-    </div>
+    <button type="button" data-admin-lightbox
+      data-lightbox-src="<?= esc($gambarUrl, 'attr'); ?>"
+      data-lightbox-title="<?= esc($informasi['judul'], 'attr'); ?>"
+      data-lightbox-description="<?= esc(character_limiter(strip_tags($informasi['konten'] ?? ''), 160), 'attr'); ?>"
+      class="mb-6 w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-gray-800">
+      <span class="sr-only">Perbesar gambar informasi <?= esc($informasi['judul']); ?></span>
+      <div class="relative h-72 w-full">
+        <img src="<?= esc($gambarUrl); ?>" alt="Gambar Informasi"
+          class="h-full w-full object-cover transition duration-500 hover:scale-[1.02]" />
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+      </div>
+    </button>
   <?php endif; ?>
 
   <article class="prose max-w-none text-gray-700 dark:prose-invert dark:text-gray-200">

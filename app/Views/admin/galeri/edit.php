@@ -35,10 +35,15 @@
 
     <div>
       <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Foto Saat Ini</label>
-      <div class="overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
+      <button type="button" data-admin-lightbox
+        data-lightbox-src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>"
+        data-lightbox-title="<?= esc($photo['judul'], 'attr'); ?>"
+        data-lightbox-description="<?= esc(character_limiter(strip_tags($photo['deskripsi'] ?? ''), 160), 'attr'); ?>"
+        class="block w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 dark:border-gray-700 dark:bg-gray-900/50">
+        <span class="sr-only">Perbesar foto galeri saat ini</span>
         <img src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
           class="h-56 w-full object-cover" />
-      </div>
+      </button>
     </div>
 
     <div>

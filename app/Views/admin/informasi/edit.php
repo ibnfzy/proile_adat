@@ -54,7 +54,14 @@
         ?>
         <div class="mt-4">
           <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gambar saat ini</p>
-          <img src="<?= esc($currentImage); ?>" alt="Gambar informasi saat ini" class="mt-2 h-32 w-32 rounded-lg object-cover" />
+          <button type="button" data-admin-lightbox
+            data-lightbox-src="<?= esc($currentImage, 'attr'); ?>"
+            data-lightbox-title="<?= esc($informasi['judul'], 'attr'); ?>"
+            data-lightbox-description="<?= esc(character_limiter(strip_tags($informasi['konten'] ?? ''), 160), 'attr'); ?>"
+            class="mt-2 inline-flex overflow-hidden rounded-lg border border-gray-200 shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-gray-700">
+            <span class="sr-only">Lihat versi besar gambar informasi saat ini</span>
+            <img src="<?= esc($currentImage); ?>" alt="Gambar informasi saat ini" class="h-32 w-32 object-cover" />
+          </button>
         </div>
       <?php endif; ?>
     </div>
