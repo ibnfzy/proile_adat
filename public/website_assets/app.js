@@ -453,6 +453,58 @@ function attachLightboxToImages(scope = document) {
 }
 
 // ===== Helper Functions =====
+function renderSkeletons(container, count, templateFn) {
+  if (!container || typeof templateFn !== "function") {
+    return;
+  }
+
+  container.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+
+  for (let index = 0; index < count; index += 1) {
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = templateFn(index);
+    const element = wrapper.firstElementChild;
+
+    if (element) {
+      fragment.appendChild(element);
+    }
+  }
+
+  container.appendChild(fragment);
+}
+
+function createInformasiSkeleton() {
+  return `
+    <div class="info-box skeleton-card" aria-hidden="true">
+      <div class="skeleton skeleton-icon"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text short"></div>
+    </div>
+  `;
+}
+
+function createArtikelSkeleton() {
+  return `
+    <div class="artikel-card skeleton-card" aria-hidden="true">
+      <div class="skeleton skeleton-image-article" data-lightbox-disabled="true"></div>
+      <div class="artikel-content">
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text short"></div>
+      </div>
+    </div>
+  `;
+}
+
+function createGaleriSkeleton() {
+  return `
+    <div class="galeri-item skeleton-card" aria-hidden="true">
+      <div class="skeleton skeleton-image-gallery" data-lightbox-disabled="true"></div>
+    </div>
+  `;
+}
+
 function getImageWithPlaceholder(imageUrl) {
   if (typeof imageUrl !== "string") {
     return PLACEHOLDER_IMAGE;
@@ -679,8 +731,14 @@ async function initHomePage() {
 
   const artikelGrid = document.getElementById("artikelGrid");
   const galeriGrid = document.getElementById("galeriGrid");
+  const informasiPreview = document.getElementById("informasiPreview");
+
+  if (informasiPreview) {
+    renderSkeletons(informasiPreview, 3, createInformasiSkeleton);
+  }
 
   if (artikelGrid) {
+    renderSkeletons(artikelGrid, 3, createArtikelSkeleton);
     try {
       const artikelData = await fetchArtikelData();
       artikelGrid.innerHTML = "";
@@ -710,6 +768,7 @@ async function initHomePage() {
   }
 
   if (galeriGrid) {
+    renderSkeletons(galeriGrid, 6, createGaleriSkeleton);
     try {
       const galeriData = await fetchGaleriData();
       galeriGrid.innerHTML = "";
@@ -731,6 +790,37 @@ async function initHomePage() {
       console.error("Error loading galeri:", error);
       galeriGrid.innerHTML =
         '<p style="text-align: center; color: #999;">Gagal memuat galeri</p>';
+    }
+  }
+
+  if (informasiPreview) {
+    try {
+      const informasiData = await fetchInformasiData();
+      informasiPreview.innerHTML = "";
+
+      if (!informasiData || informasiData.length === 0) {
+        informasiPreview.innerHTML =
+          '<p style="text-align: center; color: #999;">Belum ada informasi yang tersedia</p>';
+        return;
+      }
+
+      informasiData.slice(0, 3).forEach((info) => {
+        const infoBox = document.createElement("div");
+        infoBox.className = "info-box";
+        infoBox.innerHTML = `
+                    <div class="info-icon">${info.icon || ""}</div>
+                    <h3>${info.title}</h3>
+                    <p>${info.excerpt}</p>
+                    <a href="${PAGE_URLS.informasiDetail(
+                      info.id
+                    )}" class="info-link">Pelajari lebih lanjut →</a>
+                `;
+        informasiPreview.appendChild(infoBox);
+      });
+    } catch (error) {
+      console.error("Error loading informasi preview:", error);
+      informasiPreview.innerHTML =
+        '<p style="text-align: center; color: #999;">Gagal memuat informasi</p>';
     }
   }
 }
