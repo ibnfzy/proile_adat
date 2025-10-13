@@ -113,6 +113,7 @@
     <!-- ===== Content Area End ===== -->
   </div>
   <!-- ===== Page Wrapper End ===== -->
+  <?= $this->include('admin/partials/lightbox'); ?>
   <div id="settings-modal"
     class="fixed inset-0 z-[100000] hidden items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
     <div data-modal-overlay class="flex h-full w-full items-center justify-center">
@@ -192,6 +193,108 @@
     </div>
   </div>
   <script defer src="/panel_assets/bundle.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const body = document.body;
+      const lightbox = document.getElementById('adminLightbox');
+      if (!lightbox) {
+        return;
+      }
+
+      const lightboxBackdrop = lightbox.querySelector('[data-lightbox-backdrop]');
+      const lightboxImage = lightbox.querySelector('[data-lightbox-image]');
+      const lightboxTitle = lightbox.querySelector('[data-lightbox-title]');
+      const lightboxDescription = lightbox.querySelector('[data-lightbox-description]');
+      const lightboxCloseButtons = lightbox.querySelectorAll('[data-lightbox-close]');
+
+      const hideDescription = () => {
+        if (!lightboxDescription) {
+          return;
+        }
+        lightboxDescription.textContent = '';
+        lightboxDescription.classList.add('hidden');
+      };
+
+      const showDescription = (text) => {
+        if (!lightboxDescription) {
+          return;
+        }
+
+        const trimmed = (text || '').trim();
+        if (trimmed.length === 0) {
+          hideDescription();
+          return;
+        }
+
+        lightboxDescription.textContent = trimmed;
+        lightboxDescription.classList.remove('hidden');
+      };
+
+      hideDescription();
+
+      const openLightbox = (trigger) => {
+        const image = trigger.getAttribute('data-lightbox-src');
+        if (!image) {
+          return;
+        }
+
+        const title = trigger.getAttribute('data-lightbox-title') || 'Pratinjau Foto';
+        const description = trigger.getAttribute('data-lightbox-description') || '';
+
+        lightboxImage.src = image;
+        lightboxImage.alt = title;
+        lightboxTitle.textContent = title;
+        showDescription(description);
+
+        lightbox.classList.remove('hidden');
+        lightbox.classList.add('flex');
+        body.classList.add('overflow-hidden');
+
+        const closeButton = lightbox.querySelector('[data-lightbox-close]');
+        if (closeButton) {
+          setTimeout(() => closeButton.focus(), 120);
+        }
+      };
+
+      const closeLightbox = () => {
+        lightbox.classList.remove('flex');
+        lightbox.classList.add('hidden');
+        body.classList.remove('overflow-hidden');
+        lightboxImage.src = '';
+        hideDescription();
+      };
+
+      document.querySelectorAll('[data-admin-lightbox]').forEach((trigger) => {
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          openLightbox(trigger);
+        });
+
+        trigger.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openLightbox(trigger);
+          }
+        });
+      });
+
+      lightboxCloseButtons.forEach((button) => {
+        button.addEventListener('click', closeLightbox);
+      });
+
+      lightbox.addEventListener('click', (event) => {
+        if (event.target === lightboxBackdrop || event.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && lightbox.classList.contains('flex')) {
+          closeLightbox();
+        }
+      });
+    });
+  </script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const modal = document.getElementById('settings-modal');

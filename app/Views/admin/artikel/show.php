@@ -40,10 +40,18 @@
           $gambarUrl = base_url('/uploads/' . ltrim($cleanImage, '/'));
       }
     ?>
-      <div class="mb-8 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-        <img src="<?= esc($gambarUrl); ?>" alt="Gambar artikel"
-          class="h-64 w-full object-cover" />
-      </div>
+      <button type="button" data-admin-lightbox
+        data-lightbox-src="<?= esc($gambarUrl, 'attr'); ?>"
+        data-lightbox-title="<?= esc($artikel['judul'], 'attr'); ?>"
+        data-lightbox-description="<?= esc(character_limiter(strip_tags($artikel['isi'] ?? ''), 180), 'attr'); ?>"
+        class="mb-8 w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-gray-700">
+        <span class="sr-only">Perbesar gambar artikel <?= esc($artikel['judul']); ?></span>
+        <div class="relative h-64 w-full">
+          <img src="<?= esc($gambarUrl); ?>" alt="Gambar artikel"
+            class="h-full w-full object-cover transition duration-500 hover:scale-[1.02]" />
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+        </div>
+      </button>
     <?php endif; ?>
 
     <article class="prose prose-indigo max-w-none text-gray-700 dark:prose-invert dark:text-gray-100">
