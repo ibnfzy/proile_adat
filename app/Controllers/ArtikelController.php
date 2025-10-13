@@ -62,7 +62,7 @@ class ArtikelController extends BaseController
             'isi'         => 'required',
             'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
             'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
+            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
@@ -134,7 +134,7 @@ class ArtikelController extends BaseController
             'isi'         => 'required',
             'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
             'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png]|max_size[gambar,4096]',
+            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
         ];
 
         if (! $this->validate($rules)) {
