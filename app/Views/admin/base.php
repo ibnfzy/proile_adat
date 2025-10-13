@@ -21,11 +21,11 @@
          $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
   :class="{'dark bg-gray-900': darkMode === true}">
   <?php
-    $session = session();
-    $flashMessage = $session->getFlashdata('message');
-    $flashError = $session->getFlashdata('error');
-    $modalErrors = $session->getFlashdata('errors') ?? [];
-    $shouldOpenSettingsModal = $session->getFlashdata('openSettingsModal');
+  $session = session();
+  $flashMessage = $session->getFlashdata('message');
+  $flashError = $session->getFlashdata('error');
+  $modalErrors = $session->getFlashdata('errors') ?? [];
+  $shouldOpenSettingsModal = $session->getFlashdata('openSettingsModal');
   ?>
   <!-- ===== Preloader Start ===== -->
   <div x-show="loaded"
@@ -84,8 +84,8 @@
           <?php if (! empty($flashMessage)) : ?>
             <div
               class="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
@@ -96,8 +96,8 @@
           <?php if (! empty($flashError)) : ?>
             <div
               class="mb-6 flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
@@ -125,7 +125,8 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">Perbarui informasi akun Anda.
             </p>
           </div>
-          <button type="button" class="text-gray-400 transition hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+          <button type="button"
+            class="text-gray-400 transition hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
             data-modal-close>
             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
               stroke="currentColor">
@@ -146,13 +147,14 @@
           </div>
         <?php endif; ?>
 
-        <form action="/Admin/pengaturan/update" method="post" class="space-y-5">
+        <form action="/Admin/pengaturan/update" method="post" class="space-y-5" autocomplete="off">
           <?= csrf_field(); ?>
           <div class="space-y-1">
-            <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nama Lengkap</label>
+            <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nama
+              Lengkap</label>
             <input type="text" id="nama_lengkap" name="nama_lengkap"
               value="<?= esc(old('nama_lengkap', (string) ($session->get('namaLengkap') ?? ''))); ?>"
-              class="block w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
+              class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
               required>
           </div>
 
@@ -160,7 +162,7 @@
             <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
             <input type="text" id="username" name="username"
               value="<?= esc(old('username', (string) ($session->get('username') ?? ''))); ?>"
-              class="block w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
+              class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
               required>
           </div>
 
@@ -168,14 +170,17 @@
             <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
             <input type="email" id="email" name="email"
               value="<?= esc(old('email', (string) ($session->get('email') ?? ''))); ?>"
-              class="block w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
+              class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
               required>
           </div>
 
           <div class="space-y-1">
-            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Password Baru</label>
-            <input type="password" id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password"
-              class="block w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40">
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Password
+              Baru</label>
+            <input type="password" id="password" name="password"
+              placeholder="Kosongkan jika tidak ingin mengubah password"
+              class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
+              value="" autocomplete="off">
             <p class="text-xs text-gray-500 dark:text-gray-400">Kosongkan jika tidak mau mengubah password.</p>
           </div>
 
@@ -296,7 +301,7 @@
     });
   </script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       const modal = document.getElementById('settings-modal');
       if (!modal) {
         return;
