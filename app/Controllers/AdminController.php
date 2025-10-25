@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\ArtikelModel;
 use App\Models\GaleriModel;
 use App\Models\InformasiModel;
+use App\Models\PengaturanModel;
 use App\Models\UserModel;
 
 class AdminController extends BaseController
@@ -35,6 +36,7 @@ class AdminController extends BaseController
             'username'     => 'required|min_length[3]',
             'email'        => 'required|valid_email',
             'password'     => 'permit_empty|min_length[6]',
+            'music_url'    => 'permit_empty|valid_url',
         ];
 
         if (! $this->validate($rules)) {
@@ -59,7 +61,8 @@ class AdminController extends BaseController
             'email'        => (string) $this->request->getPost('email'),
         ];
 
-        $password = (string) $this->request->getPost('password');
+        $password  = (string) $this->request->getPost('password');
+        $musicUrl  = trim((string) $this->request->getPost('music_url'));
 
         if ($password !== '') {
             $data['password'] = password_hash($password, PASSWORD_DEFAULT);
@@ -85,6 +88,33 @@ class AdminController extends BaseController
                 ->with('openSettingsModal', true)
                 ->with('errors', ! empty($modelErrors) ? $modelErrors : ['Gagal memperbarui data pengguna.'])
                 ->with('error', 'Gagal memperbarui data pengguna. Silakan periksa kembali data Anda.');
+        }
+
+        $pengaturanModel = new PengaturanModel();
+
+        try {
+            $settingUpdated = $pengaturanModel->save([
+                'key'   => 'music_url',
+                'value' => $musicUrl !== '' ? $musicUrl : null,
+            ]);
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->to('/Admin')
+                ->withInput()
+                ->with('openSettingsModal', true)
+                ->with('errors', ['Terjadi kesalahan saat menyimpan pengaturan musik.'])
+                ->with('error', 'Gagal memperbarui pengaturan musik. Silakan coba lagi.');
+        }
+
+        if ($settingUpdated === false) {
+            $settingsErrors = $pengaturanModel->errors();
+
+            return redirect()
+                ->to('/Admin')
+                ->withInput()
+                ->with('openSettingsModal', true)
+                ->with('errors', ! empty($settingsErrors) ? $settingsErrors : ['Gagal memperbarui pengaturan musik.'])
+                ->with('error', 'Gagal memperbarui pengaturan musik. Silakan periksa kembali data Anda.');
         }
 
         $this->session->set([
