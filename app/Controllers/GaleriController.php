@@ -82,8 +82,8 @@ class GaleriController extends BaseController
             return redirect()->back()->withInput()->with('errors', $errors);
         }
 
-        $imageFilename = null;
-        $videoFilename = null;
+        $imageFilename = '';
+        $videoFilename = '';
 
         if ($mediaType === 'image') {
             $imageFilename = $this->handleUploadedImage($imageFile);
