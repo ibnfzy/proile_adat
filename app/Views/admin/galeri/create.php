@@ -33,17 +33,13 @@
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Bagikan cerita singkat mengenai foto ini.</p>
     </div>
 
-    <?php $selectedMedia = old('media_type', 'none'); ?>
+    <?php $selectedMedia = old('media_type', 'image'); ?>
 
     <div>
-      <span class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Pilih Jenis Media (Opsional)</span>
+      <span class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Pilih Jenis Media</span>
       <div class="flex flex-wrap gap-3">
         <label class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600 transition hover:border-emerald-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
-          <input type="radio" name="media_type" value="none" <?= $selectedMedia === 'none' ? 'checked' : ''; ?> class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
-          Tanpa Media
-        </label>
-        <label class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600 transition hover:border-emerald-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
-          <input type="radio" name="media_type" value="image" <?= $selectedMedia === 'image' ? 'checked' : ''; ?> class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
+          <input type="radio" name="media_type" value="image" <?= $selectedMedia === 'image' ? 'checked' : ''; ?> class="h-4 w-4 text-emerald-600 focus:ring-emerald-500" required>
           Unggah Foto
         </label>
         <label class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600 transition hover:border-emerald-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
@@ -51,7 +47,7 @@
           Unggah Video
         </label>
       </div>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih salah satu jenis media jika ingin mengunggah berkas.</p>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih jenis media yang ingin diunggah.</p>
     </div>
 
     <div data-media-section="image" class="hidden">
@@ -81,7 +77,7 @@
 
     function toggleMediaSections() {
       const selected = document.querySelector('input[name="media_type"]:checked');
-      const selectedValue = selected ? selected.value : 'none';
+      const selectedValue = selected ? selected.value : 'image';
 
       mediaSections.forEach((section) => {
         const type = section.getAttribute('data-media-section');
