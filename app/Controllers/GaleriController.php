@@ -44,12 +44,23 @@ class GaleriController extends BaseController
 
     public function store(): RedirectResponse
     {
+        $mediaType = (string) $this->request->getPost('media_type');
+
+        if (! in_array($mediaType, ['image', 'video', 'none'], true)) {
+            $mediaType = 'none';
+        }
+
         $rules = [
-            'judul'     => 'required|min_length[3]|max_length[255]',
-            'deskripsi' => 'permit_empty|string',
-            'gambar'    => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
-            'video'     => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
+            'judul'      => 'required|min_length[3]|max_length[255]',
+            'deskripsi'  => 'permit_empty|string',
+            'media_type' => 'permit_empty|in_list[none,image,video]',
         ];
+
+        if ($mediaType === 'image') {
+            $rules['gambar'] = 'uploaded[gambar]|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]';
+        } elseif ($mediaType === 'video') {
+            $rules['video'] = 'uploaded[video]|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]';
+        }
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -58,14 +69,38 @@ class GaleriController extends BaseController
         $imageFile = $this->request->getFile('gambar');
         $videoFile = $this->request->getFile('video');
 
-        if ($this->isNoFile($imageFile) && $this->isNoFile($videoFile)) {
-            return redirect()->back()->withInput()->with('errors', [
-                'media' => 'Unggah minimal satu gambar atau video untuk galeri.',
-            ]);
+        $errors = [];
+
+        if ($mediaType === 'image') {
+            if (! $this->isNoFile($videoFile)) {
+                $errors['video'] = 'Pilih jenis media "Video" jika ingin mengunggah berkas video.';
+            }
+        } elseif ($mediaType === 'video') {
+            if (! $this->isNoFile($imageFile)) {
+                $errors['gambar'] = 'Pilih jenis media "Foto" jika ingin mengunggah berkas gambar.';
+            }
+        } else {
+            if (! $this->isNoFile($imageFile)) {
+                $errors['gambar'] = 'Pilih jenis media "Foto" untuk mengunggah gambar atau kosongkan pilihan media.';
+            }
+
+            if (! $this->isNoFile($videoFile)) {
+                $errors['video'] = 'Pilih jenis media "Video" untuk mengunggah video atau kosongkan pilihan media.';
+            }
         }
 
-        $imageFilename = $this->handleUploadedImage($imageFile);
-        $videoFilename = $this->handleUploadedVideo($videoFile);
+        if ($errors !== []) {
+            return redirect()->back()->withInput()->with('errors', $errors);
+        }
+
+        $imageFilename = null;
+        $videoFilename = null;
+
+        if ($mediaType === 'image') {
+            $imageFilename = $this->handleUploadedImage($imageFile);
+        } elseif ($mediaType === 'video') {
+            $videoFilename = $this->handleUploadedVideo($videoFile);
+        }
 
         $this->galeriModel->insert([
             'judul'     => (string) $this->request->getPost('judul'),
@@ -99,28 +134,59 @@ class GaleriController extends BaseController
             throw PageNotFoundException::forPageNotFound('Foto tidak ditemukan.');
         }
 
+        $mediaType = (string) $this->request->getPost('media_type');
+
+        if (! in_array($mediaType, ['image', 'video', 'none'], true)) {
+            if (! empty($photo['video'])) {
+                $mediaType = 'video';
+            } elseif (! empty($photo['gambar'])) {
+                $mediaType = 'image';
+            } else {
+                $mediaType = 'none';
+            }
+        }
+
         $rules = [
-            'judul'     => "required|min_length[3]|max_length[255]|is_unique[galeri.judul,id,{$id}]",
-            'deskripsi' => 'permit_empty|string',
-            'gambar'    => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
-            'video'     => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
+            'judul'      => "required|min_length[3]|max_length[255]|is_unique[galeri.judul,id,{$id}]",
+            'deskripsi'  => 'permit_empty|string',
+            'media_type' => 'permit_empty|in_list[none,image,video]',
         ];
+
+        if ($mediaType === 'image') {
+            $rules['gambar'] = ($photo['gambar'] ? 'if_exist|' : 'uploaded[gambar]|') . 'is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]';
+        } elseif ($mediaType === 'video') {
+            $rules['video'] = ($photo['video'] ? 'if_exist|' : 'uploaded[video]|') . 'mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]';
+        }
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $imageFile   = $this->request->getFile('gambar');
-        $videoFile   = $this->request->getFile('video');
-        $removeVideo = (bool) $this->request->getPost('remove_video');
+        $imageFile = $this->request->getFile('gambar');
+        $videoFile = $this->request->getFile('video');
 
-        $imageFilename = $this->handleUploadedImage($imageFile, $photo['gambar'] ?? null);
-        $videoFilename = $this->handleUploadedVideo($videoFile, $photo['video'] ?? null, $removeVideo);
+        $errors = [];
 
-        if ($imageFilename === null && $videoFilename === null) {
-            return redirect()->back()->withInput()->with('errors', [
-                'media' => 'Minimal satu media (gambar atau video) harus tersedia.',
-            ]);
+        if ($mediaType === 'image') {
+            if (! $this->isNoFile($videoFile)) {
+                $errors['video'] = 'Pilih jenis media "Video" jika ingin mengunggah berkas video.';
+            }
+        } elseif ($mediaType === 'video') {
+            if (! $this->isNoFile($imageFile)) {
+                $errors['gambar'] = 'Pilih jenis media "Foto" jika ingin mengunggah berkas gambar.';
+            }
+        } else {
+            if (! $this->isNoFile($imageFile)) {
+                $errors['gambar'] = 'Pilih jenis media "Foto" untuk mengunggah gambar atau kosongkan pilihan media.';
+            }
+
+            if (! $this->isNoFile($videoFile)) {
+                $errors['video'] = 'Pilih jenis media "Video" untuk mengunggah video atau kosongkan pilihan media.';
+            }
+        }
+
+        if ($errors !== []) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
         $updateData = [
@@ -128,12 +194,33 @@ class GaleriController extends BaseController
             'deskripsi' => (string) $this->request->getPost('deskripsi'),
         ];
 
-        if ($imageFilename !== ($photo['gambar'] ?? null)) {
-            $updateData['gambar'] = $imageFilename;
-        }
+        if ($mediaType === 'image') {
+            $imageFilename          = $this->handleUploadedImage($imageFile, $photo['gambar'] ?? null);
+            $updateData['gambar']    = $imageFilename;
+            $updateData['video']     = null;
 
-        if ($removeVideo || $videoFilename !== ($photo['video'] ?? null)) {
-            $updateData['video'] = $videoFilename;
+            if (! empty($photo['video'])) {
+                $this->deleteUploadedFile($photo['video']);
+            }
+        } elseif ($mediaType === 'video') {
+            $videoFilename          = $this->handleUploadedVideo($videoFile, $photo['video'] ?? null);
+            $updateData['video']    = $videoFilename;
+            $updateData['gambar']   = null;
+
+            if (! empty($photo['gambar'])) {
+                $this->deleteUploadedFile($photo['gambar']);
+            }
+        } else {
+            $updateData['gambar'] = null;
+            $updateData['video']  = null;
+
+            if (! empty($photo['gambar'])) {
+                $this->deleteUploadedFile($photo['gambar']);
+            }
+
+            if (! empty($photo['video'])) {
+                $this->deleteUploadedFile($photo['video']);
+            }
         }
 
         $this->galeriModel->update($id, $updateData);
