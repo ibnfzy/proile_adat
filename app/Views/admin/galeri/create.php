@@ -34,10 +34,17 @@
     </div>
 
     <div>
-      <label for="gambar" class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Unggah Foto</label>
-      <input type="file" id="gambar" name="gambar" accept="image/png,image/jpeg,image/jpg,image/webp" required
+      <label for="gambar" class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Unggah Foto (Opsional)</label>
+      <input type="file" id="gambar" name="gambar" accept="image/png,image/jpeg,image/jpg,image/webp"
         class="w-full rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-sm text-gray-600 transition file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-medium file:text-white hover:border-emerald-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:file:bg-emerald-500" />
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format yang didukung: JPG, PNG, atau WEBP. Maksimal 4MB.</p>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format yang didukung: JPG, PNG, atau WEBP. Maksimal 4MB per file. Minimal unggah salah satu media (foto atau video).</p>
+    </div>
+
+    <div>
+      <label for="video" class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">Unggah Video (Opsional)</label>
+      <input type="file" id="video" name="video" accept="video/mp4,video/webm,video/ogg"
+        class="w-full rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-sm text-gray-600 transition file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-medium file:text-white hover:border-emerald-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:file:bg-emerald-500" />
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format video yang didukung: MP4, WEBM, atau OGG dengan ukuran maksimum 50MB.</p>
     </div>
 
     <div class="flex items-center justify-end gap-3">

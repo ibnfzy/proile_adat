@@ -70,6 +70,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Rambu Solo merupakan upacara pemakaman adat yang sangat sakral bagi masyarakat Toraja, termasuk di Kecamatan Nosu.",
     image: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600",
+    images: ["https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200"],
+    video: "",
     date: "2025-01-15",
     category: "adat",
     author: "Admin Nosu",
@@ -92,6 +94,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Ma'badong adalah tarian dan nyanyian tradisional yang dilakukan dalam upacara adat dengan makna filosofis mendalam.",
     image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600",
+    images: ["https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200"],
+    video: "",
     date: "2025-01-10",
     category: "budaya",
     author: "Admin Nosu",
@@ -114,6 +118,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Tongkonan adalah rumah adat yang menjadi simbol kebesaran keluarga dengan filosofi perjalanan hidup manusia.",
     image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=600",
+    images: ["https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200"],
+    video: "",
     date: "2025-01-05",
     category: "budaya",
     author: "Admin Nosu",
@@ -136,6 +142,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Rambu Tuka adalah upacara adat yang dilaksanakan sebagai ungkapan syukur atas berkat dalam kehidupan.",
     image: "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=600",
+    images: ["https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200"],
+    video: "",
     date: "2024-12-28",
     category: "adat",
     author: "Admin Nosu",
@@ -155,6 +163,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Sistem kekerabatan berbasis Tongkonan masih menjadi pondasi struktur sosial di Kecamatan Nosu.",
     image: "https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=600",
+    images: ["https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=1200"],
+    video: "",
     date: "2024-12-20",
     category: "sejarah",
     author: "Admin Nosu",
@@ -174,6 +184,8 @@ const ARTIKEL_DATA = [
     excerpt:
       "Seni menenun kain tradisional masih dilestarikan oleh masyarakat Nosu dengan motif-motif khas.",
     image: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600",
+    images: ["https://images.unsplash.com/photo-1464207687429-7505649dae38?w=1200"],
+    video: "",
     date: "2024-12-15",
     category: "budaya",
     author: "Admin Nosu",
@@ -194,23 +206,51 @@ const GALERI_DATA = [
     id: 1,
     title: "Upacara Adat Rambu Solo",
     image: "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=600",
+    video: "",
   },
   {
     id: 2,
     title: "Tarian Ma'badong",
     image: "https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=600",
+    video: "",
   },
   {
     id: 3,
     title: "Rumah Tongkonan Traditional",
     image: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600",
+    video: "",
   },
   {
     id: 4,
     title: "Festival Budaya Nosu",
     image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600",
+    video: "",
   },
 ];
+
+function normalizeArtikelEntry(entry = {}) {
+  const normalized = { ...entry };
+  const images = Array.isArray(entry.images)
+    ? entry.images.filter((value) => typeof value === "string" && value.trim() !== "")
+    : [];
+
+  if (!images.length && typeof entry.image === "string" && entry.image.trim() !== "") {
+    images.push(entry.image.trim());
+  }
+
+  normalized.images = images;
+  normalized.image = images[0] || (typeof entry.image === "string" ? entry.image : "");
+  normalized.video = typeof entry.video === "string" ? entry.video : "";
+
+  return normalized;
+}
+
+function normalizeGaleriEntry(entry = {}) {
+  const normalized = { ...entry };
+  normalized.image = typeof entry.image === "string" ? entry.image : "";
+  normalized.video = typeof entry.video === "string" ? entry.video : "";
+  return normalized;
+}
 
 const INFORMASI_DATA = [
   {
@@ -452,6 +492,15 @@ function attachLightboxToImages(scope = document) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // ===== Helper Functions =====
 function renderSkeletons(container, count, templateFn) {
   if (!container || typeof templateFn !== "function") {
@@ -506,6 +555,10 @@ function createGaleriSkeleton() {
 }
 
 function getImageWithPlaceholder(imageUrl) {
+  if (Array.isArray(imageUrl)) {
+    imageUrl = imageUrl[0];
+  }
+
   if (typeof imageUrl !== "string") {
     return PLACEHOLDER_IMAGE;
   }
@@ -548,7 +601,7 @@ function getInformasiIdFromUrl() {
 
 async function fetchArtikelData() {
   if (!ENABLE_API) {
-    return ARTIKEL_DATA;
+    return ARTIKEL_DATA.map(normalizeArtikelEntry);
   }
 
   if (artikelDataCache) {
@@ -561,13 +614,15 @@ async function fetchArtikelData() {
   }
 
   const data = await response.json();
-  artikelDataCache = data;
-  return data;
+  artikelDataCache = Array.isArray(data)
+    ? data.map(normalizeArtikelEntry)
+    : [];
+  return artikelDataCache;
 }
 
 async function fetchGaleriData() {
   if (!ENABLE_API) {
-    return GALERI_DATA;
+    return GALERI_DATA.map(normalizeGaleriEntry);
   }
 
   if (galeriDataCache) {
@@ -580,8 +635,10 @@ async function fetchGaleriData() {
   }
 
   const data = await response.json();
-  galeriDataCache = data;
-  return data;
+  galeriDataCache = Array.isArray(data)
+    ? data.map(normalizeGaleriEntry)
+    : [];
+  return galeriDataCache;
 }
 
 async function fetchInformasiData() {
@@ -775,16 +832,34 @@ async function initHomePage() {
 
       galeriData.forEach((item) => {
         const galeriItem = document.createElement("div");
-        galeriItem.className = "galeri-item";
         const imageUrl = getImageWithPlaceholder(item.image);
-        galeriItem.innerHTML = `
-                    <img src="${imageUrl}" alt="${item.title}" class="galeri-image">
-                    <div class="galeri-overlay">
-                        <h4 class="galeri-title">${item.title}</h4>
-                    </div>
-                `;
-        galeriGrid.appendChild(galeriItem);
-        attachLightboxToImages(galeriItem);
+        const hasVideo = Boolean(item.video);
+
+        galeriItem.className = "galeri-item";
+
+        if (hasVideo) {
+          galeriItem.classList.add("galeri-item-video");
+          galeriItem.innerHTML = `
+            <video src="${item.video}" ${
+              imageUrl ? `poster="${imageUrl}"` : ""
+            } preload="metadata" controls class="galeri-video" data-background-music-interrupt></video>
+            <div class="galeri-overlay">
+              <div class="galeri-badge">Video</div>
+              <h4 class="galeri-title">${item.title}</h4>
+            </div>
+          `;
+          galeriGrid.appendChild(galeriItem);
+          registerMediaInterruptors(galeriItem);
+        } else {
+          galeriItem.innerHTML = `
+            <img src="${imageUrl}" alt="${item.title}" class="galeri-image">
+            <div class="galeri-overlay">
+              <h4 class="galeri-title">${item.title}</h4>
+            </div>
+          `;
+          galeriGrid.appendChild(galeriItem);
+          attachLightboxToImages(galeriItem);
+        }
       });
     } catch (error) {
       console.error("Error loading galeri:", error);
@@ -1022,6 +1097,178 @@ async function initArtikelPage() {
 }
 
 // ===== Artikel Detail Page =====
+function buildArtikelMediaHTML(artikel) {
+  const images = Array.isArray(artikel.images)
+    ? artikel.images.filter((url) => typeof url === "string" && url.trim() !== "")
+    : [];
+  const hasImages = images.length > 0;
+  const hasVideo = typeof artikel.video === "string" && artikel.video.trim() !== "";
+
+  if (!hasImages && !hasVideo) {
+    return "";
+  }
+
+  let sliderHtml = "";
+
+  if (hasImages) {
+    const slides = images
+      .map(
+        (imageUrl, index) => `
+          <div class="artikel-slide${index === 0 ? " is-active" : ""}" data-index="${index}">
+            <img src="${imageUrl}" alt="${escapeHtml(
+              artikel.title
+            )} - gambar ${index + 1}" class="artikel-slide-image" loading="lazy" data-caption="${escapeHtml(
+              artikel.title
+            )}">
+          </div>
+        `
+      )
+      .join("");
+
+    const controls = images.length > 1
+      ? `
+        <button class="slider-control prev" type="button" aria-label="Sebelumnya">&#10094;</button>
+        <button class="slider-control next" type="button" aria-label="Selanjutnya">&#10095;</button>
+        <div class="slider-dots">
+          ${images
+            .map(
+              (_, index) => `
+                <button class="slider-dot${index === 0 ? " is-active" : ""}" type="button" data-index="${index}" aria-label="Slide ${index + 1}"></button>
+              `
+            )
+            .join("")}
+        </div>
+      `
+      : "";
+
+    sliderHtml = `
+      <div class="artikel-slider" data-slider>
+        ${slides}
+        ${controls}
+      </div>
+    `;
+  }
+
+  const videoHtml = hasVideo
+    ? `
+      <div class="artikel-video-wrapper">
+        <video src="${artikel.video}" controls preload="metadata" class="artikel-video" data-background-music-interrupt></video>
+      </div>
+    `
+    : "";
+
+  return `
+    <div class="artikel-media">
+      ${sliderHtml}
+      ${videoHtml}
+    </div>
+  `;
+}
+
+function initMediaSliders(scope = document) {
+  const sliders = scope.querySelectorAll(".artikel-slider[data-slider]");
+
+  sliders.forEach((slider) => {
+    if (slider.dataset.sliderInitialized === "true") {
+      return;
+    }
+
+    const slides = Array.from(slider.querySelectorAll(".artikel-slide"));
+
+    if (!slides.length) {
+      return;
+    }
+
+    slider.dataset.sliderInitialized = "true";
+
+    const prevButton = slider.querySelector(".slider-control.prev");
+    const nextButton = slider.querySelector(".slider-control.next");
+    const dots = Array.from(slider.querySelectorAll(".slider-dot"));
+
+    let currentIndex = 0;
+    let autoplayTimer = null;
+    let manualPause = false;
+    const autoplayDelay = 5000;
+
+    function updateActiveState() {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle("is-active", index === currentIndex);
+      });
+
+      dots.forEach((dot, index) => {
+        dot.classList.toggle("is-active", index === currentIndex);
+      });
+    }
+
+    function goTo(index) {
+      if (!slides.length) {
+        return;
+      }
+
+      currentIndex = (index + slides.length) % slides.length;
+      updateActiveState();
+    }
+
+    function stopAutoplay(manual = false) {
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+
+      if (manual) {
+        manualPause = true;
+      }
+    }
+
+    function startAutoplay() {
+      if (manualPause || slides.length <= 1) {
+        return;
+      }
+
+      stopAutoplay();
+      autoplayTimer = setInterval(() => {
+        goTo(currentIndex + 1);
+      }, autoplayDelay);
+    }
+
+    if (prevButton) {
+      prevButton.addEventListener("click", () => {
+        stopAutoplay(true);
+        goTo(currentIndex - 1);
+      });
+    }
+
+    if (nextButton) {
+      nextButton.addEventListener("click", () => {
+        stopAutoplay(true);
+        goTo(currentIndex + 1);
+      });
+    }
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const index = Number.parseInt(dot.getAttribute("data-index"), 10);
+        if (!Number.isNaN(index)) {
+          stopAutoplay(true);
+          goTo(index);
+        }
+      });
+    });
+
+    slider.addEventListener("mouseenter", () => stopAutoplay());
+    slider.addEventListener("mouseleave", () => startAutoplay());
+    slider.addEventListener("click", (event) => {
+      const isControl = event.target.closest(".slider-control") || event.target.closest(".slider-dot");
+      if (!isControl) {
+        stopAutoplay(true);
+      }
+    });
+
+    updateActiveState();
+    startAutoplay();
+  });
+}
+
 async function initArtikelDetailPage() {
   const detailContainer = document.getElementById("artikelDetail");
   if (!detailContainer) {
@@ -1043,6 +1290,8 @@ async function initArtikelDetailPage() {
       breadcrumbTitle.textContent = artikel.title;
     }
 
+    const mediaHtml = buildArtikelMediaHTML(artikel);
+
     detailContainer.innerHTML = `
             <div class="artikel-header">
                 <span class="artikel-category">${getCategoryName(
@@ -1056,9 +1305,7 @@ async function initArtikelDetailPage() {
                     <span class="meta-item">✍️ ${artikel.author}</span>
                 </div>
             </div>
-            <img src="${artikel.image}" alt="${
-      artikel.title
-    }" class="artikel-featured-image">
+            ${mediaHtml}
             <div class="artikel-body">
                 ${artikel.content}
             </div>
@@ -1072,6 +1319,8 @@ async function initArtikelDetailPage() {
             </div>
         `;
 
+    initMediaSliders(detailContainer);
+    registerMediaInterruptors(detailContainer);
     renderRelatedArtikel(artikel, artikelData);
     attachLightboxToImages(detailContainer);
   } catch (error) {
@@ -1144,6 +1393,180 @@ function shareToWhatsApp() {
   window.open(`https://wa.me/?text=${text} ${url}`, "_blank");
 }
 
+let youtubeApiPromise = null;
+let backgroundMusicPlayer = null;
+
+function loadYouTubeIframeAPI() {
+  if (youtubeApiPromise) {
+    return youtubeApiPromise;
+  }
+
+  youtubeApiPromise = new Promise((resolve) => {
+    if (window.YT && typeof window.YT.Player === "function") {
+      resolve(window.YT);
+      return;
+    }
+
+    const existingScript = document.getElementById("youtube-iframe-api");
+    if (!existingScript) {
+      const tag = document.createElement("script");
+      tag.id = "youtube-iframe-api";
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    }
+
+    const previousCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function () {
+      if (typeof previousCallback === "function") {
+        previousCallback();
+      }
+      resolve(window.YT);
+    };
+  });
+
+  return youtubeApiPromise;
+}
+
+function extractYouTubeVideoId(url) {
+  if (typeof url !== "string") {
+    return "";
+  }
+
+  const patterns = [
+    /youtu\.be\/([\w-]{6,})/i,
+    /youtube\.com\/shorts\/([\w-]{6,})/i,
+    /youtube\.com\/watch\?v=([\w-]{6,})/i,
+    /youtube\.com\/embed\/([\w-]{6,})/i,
+    /youtube\.com\/live\/([\w-]{6,})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  const urlObj = new URL(url, window.location.origin);
+  const queryId = urlObj.searchParams.get("v");
+  return queryId || "";
+}
+
+function updateMusicToggleUI(isPlaying) {
+  const toggleButton = document.getElementById("musicToggle");
+  if (!toggleButton) {
+    return;
+  }
+
+  toggleButton.setAttribute("aria-pressed", isPlaying ? "true" : "false");
+  toggleButton.classList.toggle("is-playing", Boolean(isPlaying));
+
+  const label = toggleButton.querySelector(".music-label");
+  if (label) {
+    label.textContent = isPlaying ? "Hentikan Musik" : "Putar Musik";
+  }
+}
+
+function toggleBackgroundMusic() {
+  if (!backgroundMusicPlayer || !window.YT) {
+    return;
+  }
+
+  const playerState = backgroundMusicPlayer.getPlayerState();
+  if (playerState === window.YT.PlayerState.PLAYING) {
+    backgroundMusicPlayer.pauseVideo();
+    updateMusicToggleUI(false);
+  } else {
+    backgroundMusicPlayer.playVideo();
+    updateMusicToggleUI(true);
+  }
+}
+
+function pauseBackgroundMusic() {
+  if (!backgroundMusicPlayer || !window.YT) {
+    return;
+  }
+
+  if (backgroundMusicPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
+    backgroundMusicPlayer.pauseVideo();
+    updateMusicToggleUI(false);
+  }
+}
+
+function initBackgroundMusic() {
+  const body = document.body;
+  if (!body) {
+    return;
+  }
+
+  const musicUrl = body.dataset.musicUrl ? body.dataset.musicUrl.trim() : "";
+  if (!musicUrl) {
+    return;
+  }
+
+  const videoId = extractYouTubeVideoId(musicUrl);
+  if (!videoId) {
+    return;
+  }
+
+  const playerContainer = document.getElementById("musicPlayer");
+  const toggleButton = document.getElementById("musicToggle");
+
+  if (!playerContainer || !toggleButton) {
+    return;
+  }
+
+  playerContainer.hidden = false;
+
+  loadYouTubeIframeAPI().then((YT) => {
+    backgroundMusicPlayer = new YT.Player("youtubeMusicPlayer", {
+      height: "0",
+      width: "0",
+      videoId,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        loop: 1,
+        playlist: videoId,
+        rel: 0,
+        modestbranding: 1,
+      },
+      events: {
+        onReady: () => {
+          updateMusicToggleUI(false);
+        },
+        onStateChange: (event) => {
+          const isPlaying = event.data === YT.PlayerState.PLAYING;
+          updateMusicToggleUI(isPlaying);
+        },
+      },
+    });
+  });
+
+  toggleButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleBackgroundMusic();
+  });
+}
+
+function registerMediaInterruptors(scope = document) {
+  if (!scope) {
+    return;
+  }
+
+  const videos = scope.querySelectorAll("video[data-background-music-interrupt]");
+  videos.forEach((video) => {
+    if (video.dataset.musicBound === "true") {
+      return;
+    }
+
+    video.dataset.musicBound = "true";
+    video.addEventListener("play", () => {
+      pauseBackgroundMusic();
+    });
+  });
+}
+
 // ===== Initialize All Pages =====
 document.addEventListener("DOMContentLoaded", () => {
   const isHomePage = Boolean(document.getElementById("home"));
@@ -1156,6 +1579,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initArtikelDetailPage();
   initLightboxSystem();
   attachLightboxToImages(document);
+  initBackgroundMusic();
+  registerMediaInterruptors(document);
 });
 
 // Catatan: Data akan dimuat dari API backend ketika ENABLE_API bernilai true.

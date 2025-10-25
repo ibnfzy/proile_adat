@@ -45,20 +45,40 @@
   <?php if (! empty($photos)): ?>
     <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
       <?php foreach ($photos as $photo): ?>
+        <?php
+        $imageUrl = '';
+        if (! empty($photo['gambar'])) {
+            $cleanImage = str_replace('\\', '/', ltrim((string) $photo['gambar'], '/'));
+            $imageUrl   = base_url('uploads/' . $cleanImage);
+        }
+
+        $videoUrl = '';
+        if (! empty($photo['video'])) {
+            $cleanVideo = str_replace('\\', '/', ltrim((string) $photo['video'], '/'));
+            $videoUrl   = base_url('uploads/' . $cleanVideo);
+        }
+
+        $hasVideo = $videoUrl !== '';
+        $hasImage = $imageUrl !== '';
+        ?>
         <article class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/60">
-          <button type="button" data-admin-lightbox
-            data-lightbox-src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>"
-            data-lightbox-title="<?= esc($photo['judul'], 'attr'); ?>"
-            data-lightbox-description="<?= esc($photo['deskripsi'] ?? '', 'attr'); ?>"
-            class="relative aspect-video w-full overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400">
-            <img src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
-              class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+          <div class="relative aspect-video w-full overflow-hidden">
+            <?php if ($hasVideo): ?>
+              <video src="<?= esc($videoUrl, 'attr'); ?>" controls preload="metadata"
+                class="h-full w-full object-cover" poster="<?= $hasImage ? esc($imageUrl, 'attr') : ''; ?>"></video>
+            <?php elseif ($hasImage): ?>
+              <img src="<?= esc($imageUrl, 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
+                class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+            <?php else: ?>
+              <div class="flex h-full w-full items-center justify-center bg-gray-100 text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:bg-gray-800 dark:text-gray-500">
+                Tidak ada media
+              </div>
+            <?php endif; ?>
             <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/10 to-transparent opacity-0 transition group-hover:opacity-100"></div>
-            <div class="pointer-events-none absolute bottom-4 left-4 right-4 flex items-center justify-between text-left text-xs font-medium uppercase tracking-[0.35em] text-white/80 opacity-0 transition group-hover:opacity-100">
-              <span><?= esc($photo['judul']); ?></span>
-              <span class="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-[0.6rem] font-semibold text-white/70">Preview</span>
+            <div class="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white">
+              <?= $hasVideo ? 'Video' : 'Foto'; ?>
             </div>
-          </button>
+          </div>
           <div class="flex flex-col gap-3 p-5">
             <div>
               <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90"><?= esc($photo['judul']); ?></h4>
@@ -75,17 +95,28 @@
               <?php endif; ?>
             </div>
             <div class="mt-2 flex flex-wrap gap-2">
-              <button type="button" data-admin-lightbox
-                data-lightbox-src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>"
-                data-lightbox-title="<?= esc($photo['judul'], 'attr'); ?>"
-                data-lightbox-description="<?= esc($photo['deskripsi'] ?? '', 'attr'); ?>"
-                class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:from-emerald-400 hover:to-emerald-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:shadow-emerald-500/30">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                Lihat
-              </button>
+              <?php if ($hasImage): ?>
+                <button type="button" data-admin-lightbox
+                  data-lightbox-src="<?= esc($imageUrl, 'attr'); ?>"
+                  data-lightbox-title="<?= esc($photo['judul'], 'attr'); ?>"
+                  data-lightbox-description="<?= esc($photo['deskripsi'] ?? '', 'attr'); ?>"
+                  class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:from-emerald-400 hover:to-emerald-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:shadow-emerald-500/30">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Lihat Foto
+                </button>
+              <?php endif; ?>
+              <?php if ($hasVideo): ?>
+                <a href="<?= esc($videoUrl, 'attr'); ?>" target="_blank" rel="noopener"
+                  class="inline-flex items-center gap-2 rounded-lg border border-emerald-500 px-3 py-1.5 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  Putar Video
+                </a>
+              <?php endif; ?>
               <a href="/Admin/galeri/<?= esc($photo['id']); ?>/edit"
                 class="inline-flex items-center rounded-lg border border-indigo-500 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-500/20">
                 Edit

@@ -33,18 +33,26 @@ class WebsiteApiController extends BaseController
             ->orderBy('artikel.created_at', 'DESC')
             ->findAll();
 
-        $data = array_map(fn (array $article) => [
-            'id'           => (int) ($article['id'] ?? 0),
-            'title'        => (string) ($article['judul'] ?? ''),
-            'slug'         => (string) ($article['slug'] ?? ''),
-            'excerpt'      => $this->generateExcerpt($article['isi'] ?? ''),
-            'content'      => (string) ($article['isi'] ?? ''),
-            'image'        => $this->buildImageUrl($article['gambar'] ?? null),
-            'date'         => $this->formatDate($article['created_at'] ?? null),
-            'category'     => (string) ($article['kategori_slug'] ?? 'lainnya'),
-            'categoryName' => (string) ($article['kategori_nama'] ?? ''),
-            'author'       => (string) ($article['penulis_nama'] ?? 'Admin'),
-        ], $articles);
+        $data = array_map(function (array $article) {
+            $images       = $this->decodeImageList($article['gambar'] ?? null);
+            $imageUrls    = array_map([$this, 'buildMediaUrl'], $images);
+            $primaryImage = $imageUrls[0] ?? '';
+
+            return [
+                'id'           => (int) ($article['id'] ?? 0),
+                'title'        => (string) ($article['judul'] ?? ''),
+                'slug'         => (string) ($article['slug'] ?? ''),
+                'excerpt'      => $this->generateExcerpt($article['isi'] ?? ''),
+                'content'      => (string) ($article['isi'] ?? ''),
+                'image'        => $primaryImage,
+                'images'       => $imageUrls,
+                'video'        => $this->buildMediaUrl($article['video'] ?? null),
+                'date'         => $this->formatDate($article['created_at'] ?? null),
+                'category'     => (string) ($article['kategori_slug'] ?? 'lainnya'),
+                'categoryName' => (string) ($article['kategori_nama'] ?? ''),
+                'author'       => (string) ($article['penulis_nama'] ?? 'Admin'),
+            ];
+        }, $articles);
 
         return $this->response->setJSON($data);
     }
@@ -78,7 +86,8 @@ class WebsiteApiController extends BaseController
         $data = array_map(fn (array $photo) => [
             'id'          => (int) ($photo['id'] ?? 0),
             'title'       => (string) ($photo['judul'] ?? ''),
-            'image'       => $this->buildImageUrl($photo['gambar'] ?? null),
+            'image'       => $this->buildMediaUrl($photo['gambar'] ?? null),
+            'video'       => $this->buildMediaUrl($photo['video'] ?? null),
             'description' => (string) ($photo['deskripsi'] ?? ''),
         ], $photos);
 
@@ -98,8 +107,17 @@ class WebsiteApiController extends BaseController
 
     private function buildImageUrl(?string $path): string
     {
+        return $this->buildMediaUrl($path);
+    }
+
+    private function buildMediaUrl($path): string
+    {
         if (empty($path)) {
             return '';
+        }
+
+        if (is_array($path)) {
+            $path = $path[0] ?? '';
         }
 
         if (preg_match('#^https?://#i', (string) $path)) {
@@ -112,7 +130,34 @@ class WebsiteApiController extends BaseController
             $cleanPath = substr($cleanPath, strlen('uploads/')) ?: '';
         }
 
+        if ($cleanPath === '') {
+            return '';
+        }
+
         return base_url('uploads/' . $cleanPath);
+    }
+
+    private function decodeImageList($value): array
+    {
+        if (empty($value)) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return array_values(array_filter(array_map('strval', $value)));
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return array_values(array_filter(array_map('strval', $decoded)));
+            }
+
+            return [(string) $value];
+        }
+
+        return [];
     }
 
     private function formatDate(?string $date): string

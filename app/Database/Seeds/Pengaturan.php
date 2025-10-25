@@ -29,6 +29,11 @@ class Pengaturan extends Seeder
                 'value'      => '1234567890',
                 'created_at' => date('Y-m-d H:i:s'),
             ],
+            [
+                'key'        => 'music_url',
+                'value'      => 'https://www.youtube.com/watch?v=5di0qZlg2uY',
+                'created_at' => date('Y-m-d H:i:s'),
+            ],
         ];
 
         $this->db->table('pengaturan')->insertBatch($data);
