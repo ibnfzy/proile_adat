@@ -7,7 +7,16 @@
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">Lengkapi informasi artikel untuk ditampilkan kepada pengunjung.</p>
   </div>
 
-  <?php $errors = session('errors') ?? []; ?>
+  <?php
+  $errors = session('errors') ?? [];
+  $imageErrors = [];
+
+  foreach ($errors as $field => $message) {
+    if (strpos((string) $field, 'gambar') === 0) {
+      $imageErrors[] = $message;
+    }
+  }
+  ?>
 
   <form action="/Admin/artikel/store" method="post" class="space-y-6" enctype="multipart/form-data">
     <?= csrf_field(); ?>
@@ -57,13 +66,28 @@
     </div>
 
     <div>
-      <label for="gambar" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Gambar Artikel</label>
-      <input type="file" name="gambar" id="gambar" accept="image/png,image/jpeg,image/jpg,image/webp"
-        class="w-full cursor-pointer rounded-xl border <?= isset($errors['gambar']) ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'; ?> bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:bg-gray-900 dark:text-gray-100" />
-      <?php if (isset($errors['gambar'])): ?>
-        <p class="mt-2 text-sm text-red-600 dark:text-red-400"><?= esc($errors['gambar']); ?></p>
+      <label for="gambar" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Galeri Gambar Artikel</label>
+      <input type="file" name="gambar[]" id="gambar" accept="image/png,image/jpeg,image/jpg,image/webp" multiple
+        class="w-full cursor-pointer rounded-xl border <?= ! empty($imageErrors) ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'; ?> bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:bg-gray-900 dark:text-gray-100" />
+      <?php if (! empty($imageErrors)): ?>
+        <div class="mt-2 space-y-1 text-sm text-red-600 dark:text-red-400">
+          <?php foreach ($imageErrors as $message): ?>
+            <p><?= esc($message); ?></p>
+          <?php endforeach; ?>
+        </div>
       <?php else: ?>
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Opsional. Unggah gambar berekstensi JPG, PNG, atau WEBP.</p>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Opsional. Anda dapat mengunggah lebih dari satu gambar dengan format JPG, PNG, atau WEBP (maksimal 4MB per gambar).</p>
+      <?php endif; ?>
+    </div>
+
+    <div>
+      <label for="video" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Video Artikel (Opsional)</label>
+      <input type="file" name="video" id="video" accept="video/mp4,video/webm,video/ogg"
+        class="w-full cursor-pointer rounded-xl border <?= isset($errors['video']) ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'; ?> bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:bg-gray-900 dark:text-gray-100" />
+      <?php if (isset($errors['video'])): ?>
+        <p class="mt-2 text-sm text-red-600 dark:text-red-400"><?= esc($errors['video']); ?></p>
+      <?php else: ?>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Unggah video pendukung berformat MP4, WEBM, atau OGG dengan ukuran maksimum 50MB.</p>
       <?php endif; ?>
     </div>
 

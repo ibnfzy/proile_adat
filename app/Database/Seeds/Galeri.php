@@ -12,6 +12,7 @@ class Galeri extends Seeder
             [
                 'judul'      => 'Upacara Adat Nosu',
                 'gambar'     => 'upacara.jpg',
+                'video'      => null,
                 'deskripsi'  => 'Kegiatan tahunan masyarakat Nosu untuk memperingati warisan leluhur.',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -19,6 +20,7 @@ class Galeri extends Seeder
             [
                 'judul'      => 'Tarian Tradisional',
                 'gambar'     => 'tarian.jpg',
+                'video'      => null,
                 'deskripsi'  => 'Tarian khas Nosu yang dibawakan dalam berbagai acara adat.',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

@@ -15,6 +15,10 @@
         #020617;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     .glass-panel {
       backdrop-filter: blur(18px);
       background: rgba(15, 23, 42, 0.82);
@@ -23,6 +27,23 @@
 
     .lightbox-open {
       overflow: hidden;
+    }
+
+    #lightboxMedia {
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.9));
+    }
+
+    #lightboxMedia img,
+    #lightboxMedia video {
+      max-height: min(80vh, 640px);
+      width: 100%;
+      object-fit: contain;
+      background-color: #000;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    #lightboxMedia video {
+      border: none;
     }
   </style>
 </head>
@@ -60,15 +81,34 @@
     <?php if (! empty($photos)): ?>
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         <?php foreach ($photos as $photo): ?>
+          <?php
+          $imagePath = $photo['gambar'] ?? '';
+          $videoPath = $photo['video'] ?? '';
+          $imageUrl  = $imagePath ? base_url('uploads/' . ltrim((string) $imagePath, '/')) : '';
+          $videoUrl  = $videoPath ? base_url('uploads/' . ltrim((string) $videoPath, '/')) : '';
+          $hasVideo  = $videoUrl !== '';
+          $hasImage  = $imageUrl !== '';
+          $fallbackImage = 'https://via.placeholder.com/1200x675?text=Video';
+          ?>
           <article class="group relative overflow-hidden rounded-3xl border border-slate-100/10 bg-white/5 shadow-2xl shadow-emerald-500/10 transition duration-500 hover:-translate-y-1 hover:border-emerald-400/40 hover:shadow-emerald-500/30">
             <button type="button" data-lightbox-trigger
-              data-image="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>"
+              data-image="<?= esc($hasImage ? $imageUrl : ($hasVideo ? $fallbackImage : ''), 'attr'); ?>"
+              <?php if ($hasVideo): ?> data-video="<?= esc($videoUrl, 'attr'); ?>"<?php endif; ?>
               data-title="<?= esc($photo['judul'], 'attr'); ?>"
               data-description="<?= esc($photo['deskripsi'] ?? '', 'attr'); ?>"
+              data-type="<?= $hasVideo ? 'video' : 'image'; ?>"
               class="relative block w-full">
               <div class="aspect-video overflow-hidden">
-                <img src="<?= esc(base_url('uploads/' . ($photo['gambar'] ?? '')), 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
-                  class="h-full w-full object-cover transition duration-700 group-hover:scale-110" loading="lazy" />
+                <?php if ($hasVideo): ?>
+                  <img src="<?= esc($hasImage ? $imageUrl : $fallbackImage, 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
+                    class="h-full w-full object-cover transition duration-700 group-hover:scale-110" loading="lazy" />
+                  <div class="absolute inset-0 flex items-center justify-center bg-slate-950/30">
+                    <span class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/90 text-white shadow-lg shadow-emerald-500/40 transition group-hover:scale-110">▶</span>
+                  </div>
+                <?php else: ?>
+                  <img src="<?= esc($imageUrl ?: $fallbackImage, 'attr'); ?>" alt="<?= esc($photo['judul'], 'attr'); ?>"
+                    class="h-full w-full object-cover transition duration-700 group-hover:scale-110" loading="lazy" />
+                <?php endif; ?>
               </div>
               <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent p-5 text-left">
                 <h2 class="text-lg font-semibold text-white"><?= esc($photo['judul']); ?></h2>
@@ -96,18 +136,19 @@
   </main>
 
   <div id="lightbox" class="fixed inset-0 z-50 hidden place-items-center bg-slate-950/90 p-6">
-    <div class="glass-panel relative w-full max-w-4xl overflow-hidden rounded-3xl">
-      <button type="button" id="lightboxClose" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-100/20 bg-slate-900/60 text-slate-100 transition hover:border-red-400/60 hover:text-red-200">
-        <span class="sr-only">Tutup</span>
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <div class="flex flex-col gap-0 lg:flex-row">
-        <div class="lg:w-3/5">
-          <img id="lightboxImage" src="" alt="" class="h-full w-full object-cover" />
-        </div>
+      <div class="glass-panel relative w-full max-w-4xl overflow-hidden rounded-3xl">
+        <button type="button" id="lightboxClose" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-100/20 bg-slate-900/60 text-slate-100 transition hover:border-red-400/60 hover:text-red-200">
+          <span class="sr-only">Tutup</span>
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <div class="flex flex-col gap-0 lg:flex-row">
+          <div id="lightboxMedia" class="lg:w-3/5">
+            <img id="lightboxImage" src="" alt="" class="lightbox-media" />
+            <video id="lightboxVideo" controls preload="metadata" class="lightbox-media hidden" data-background-music-interrupt></video>
+          </div>
         <div class="flex flex-1 flex-col gap-4 p-6">
           <div>
             <p class="text-xs uppercase tracking-[0.45em] text-emerald-300/80">Galeri Adat Nosu</p>
@@ -122,7 +163,7 @@
                 <path d="M8 11L12 15L16 11" />
                 <path d="M20 18H4" />
               </svg>
-              Unduh Foto
+              <span id="lightboxDownloadLabel">Unduh Foto</span>
             </a>
           </div>
         </div>
@@ -135,17 +176,60 @@
       const body = document.body;
       const lightbox = document.getElementById('lightbox');
       const lightboxImage = document.getElementById('lightboxImage');
+      const lightboxVideo = document.getElementById('lightboxVideo');
       const lightboxTitle = document.getElementById('lightboxTitle');
       const lightboxDescription = document.getElementById('lightboxDescription');
       const lightboxDownload = document.getElementById('lightboxDownload');
+      const lightboxDownloadLabel = document.getElementById('lightboxDownloadLabel');
       const closeButton = document.getElementById('lightboxClose');
 
-      function openLightbox({ image, title, description }) {
-        lightboxImage.src = image;
-        lightboxImage.alt = title || 'Foto Galeri';
+      function resetVideo() {
+        lightboxVideo.pause();
+        lightboxVideo.currentTime = 0;
+        lightboxVideo.removeAttribute('src');
+        lightboxVideo.removeAttribute('poster');
+        lightboxVideo.load();
+        lightboxVideo.classList.add('hidden');
+      }
+
+      function showImage(src, altText) {
+        if (src) {
+          lightboxImage.src = src;
+        } else {
+          lightboxImage.removeAttribute('src');
+        }
+        lightboxImage.alt = altText || 'Foto Galeri';
+        lightboxImage.classList.remove('hidden');
+      }
+
+      function openLightbox({ image, video, title, description, type }) {
+        const isVideo = type === 'video' && video;
+
         lightboxTitle.textContent = title || 'Tanpa Judul';
         lightboxDescription.textContent = description || 'Tidak ada deskripsi tambahan untuk foto ini.';
-        lightboxDownload.href = image;
+
+        resetVideo();
+
+        if (isVideo) {
+          lightboxImage.classList.add('hidden');
+          if (image) {
+            // Keep image cached so next switch back to image type is instant
+            lightboxImage.src = image;
+            lightboxVideo.poster = image;
+          } else {
+            lightboxVideo.removeAttribute('poster');
+          }
+          lightboxVideo.src = video;
+          lightboxVideo.classList.remove('hidden');
+          lightboxVideo.load();
+          lightboxDownload.href = video;
+          lightboxDownloadLabel.textContent = 'Unduh Video';
+        } else {
+          showImage(image, title);
+          lightboxDownload.href = image || '#';
+          lightboxDownloadLabel.textContent = 'Unduh Foto';
+        }
+
         lightbox.classList.remove('hidden');
         lightbox.classList.add('grid');
         body.classList.add('lightbox-open');
@@ -153,18 +237,23 @@
       }
 
       function closeLightbox() {
+        resetVideo();
         lightbox.classList.remove('grid');
         lightbox.classList.add('hidden');
         body.classList.remove('lightbox-open');
         lightboxImage.src = '';
+        lightboxDownload.href = '#';
+        lightboxDownloadLabel.textContent = 'Unduh Foto';
       }
 
       document.querySelectorAll('[data-lightbox-trigger]').forEach((trigger) => {
         trigger.addEventListener('click', () => {
           openLightbox({
             image: trigger.getAttribute('data-image'),
+            video: trigger.getAttribute('data-video'),
             title: trigger.getAttribute('data-title'),
             description: trigger.getAttribute('data-description'),
+            type: trigger.getAttribute('data-type'),
           });
         });
       });

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\GaleriModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class GaleriController extends BaseController
@@ -46,20 +47,31 @@ class GaleriController extends BaseController
         $rules = [
             'judul'     => 'required|min_length[3]|max_length[255]',
             'deskripsi' => 'permit_empty|string',
-            'gambar'    => 'uploaded[gambar]|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
+            'gambar'    => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
+            'video'     => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
         ];
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $imageFile     = $this->request->getFile('gambar');
+        $imageFile = $this->request->getFile('gambar');
+        $videoFile = $this->request->getFile('video');
+
+        if ($this->isNoFile($imageFile) && $this->isNoFile($videoFile)) {
+            return redirect()->back()->withInput()->with('errors', [
+                'media' => 'Unggah minimal satu gambar atau video untuk galeri.',
+            ]);
+        }
+
         $imageFilename = $this->handleUploadedImage($imageFile);
+        $videoFilename = $this->handleUploadedVideo($videoFile);
 
         $this->galeriModel->insert([
             'judul'     => (string) $this->request->getPost('judul'),
             'deskripsi' => (string) $this->request->getPost('deskripsi'),
             'gambar'    => $imageFilename,
+            'video'     => $videoFilename,
         ]);
 
         return redirect()->to('/Admin/galeri')->with('success', 'Foto berhasil ditambahkan.');
@@ -91,22 +103,37 @@ class GaleriController extends BaseController
             'judul'     => "required|min_length[3]|max_length[255]|is_unique[galeri.judul,id,{$id}]",
             'deskripsi' => 'permit_empty|string',
             'gambar'    => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
+            'video'     => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
         ];
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $imageFile     = $this->request->getFile('gambar');
+        $imageFile   = $this->request->getFile('gambar');
+        $videoFile   = $this->request->getFile('video');
+        $removeVideo = (bool) $this->request->getPost('remove_video');
+
         $imageFilename = $this->handleUploadedImage($imageFile, $photo['gambar'] ?? null);
+        $videoFilename = $this->handleUploadedVideo($videoFile, $photo['video'] ?? null, $removeVideo);
+
+        if ($imageFilename === null && $videoFilename === null) {
+            return redirect()->back()->withInput()->with('errors', [
+                'media' => 'Minimal satu media (gambar atau video) harus tersedia.',
+            ]);
+        }
 
         $updateData = [
             'judul'     => (string) $this->request->getPost('judul'),
             'deskripsi' => (string) $this->request->getPost('deskripsi'),
         ];
 
-        if ($imageFilename !== null) {
+        if ($imageFilename !== ($photo['gambar'] ?? null)) {
             $updateData['gambar'] = $imageFilename;
+        }
+
+        if ($removeVideo || $videoFilename !== ($photo['video'] ?? null)) {
+            $updateData['video'] = $videoFilename;
         }
 
         $this->galeriModel->update($id, $updateData);
@@ -123,8 +150,10 @@ class GaleriController extends BaseController
         }
 
         if (! empty($photo['gambar'])) {
-            $this->deleteUploadedImage($photo['gambar']);
+            $this->deleteUploadedFile($photo['gambar']);
         }
+
+        $this->deleteUploadedFile($photo['video'] ?? null);
 
         $this->galeriModel->delete($id);
 
@@ -148,9 +177,9 @@ class GaleriController extends BaseController
         ]);
     }
 
-    private function handleUploadedImage($file, ?string $existingFilename = null): ?string
+    private function handleUploadedImage(?UploadedFile $file, ?string $existingFilename = null): ?string
     {
-        if (! $file || $file->getError() === UPLOAD_ERR_NO_FILE) {
+        if ($this->isNoFile($file)) {
             return $existingFilename;
         }
 
@@ -167,20 +196,55 @@ class GaleriController extends BaseController
         $newName = $file->getRandomName();
         $file->move($uploadPath, $newName, true);
 
-        if ($existingFilename) {
-            $this->deleteUploadedImage($existingFilename);
+        $relativePath = 'galeri/' . $newName;
+
+        if ($existingFilename && $existingFilename !== $relativePath) {
+            $this->deleteUploadedFile($existingFilename);
         }
 
-        return 'galeri/' . $newName;
+        return $relativePath;
     }
 
-    private function deleteUploadedImage(?string $filename): void
+    private function handleUploadedVideo(?UploadedFile $file, ?string $existingFilename = null, bool $forceRemove = false): ?string
+    {
+        if ($forceRemove && $existingFilename) {
+            $this->deleteUploadedFile($existingFilename);
+            $existingFilename = null;
+        }
+
+        if ($this->isNoFile($file)) {
+            return $existingFilename;
+        }
+
+        if (! $file->isValid()) {
+            return $existingFilename;
+        }
+
+        $uploadPath = ROOTPATH . 'public/uploads/galeri/videos';
+
+        if (! is_dir($uploadPath)) {
+            mkdir($uploadPath, 0775, true);
+        }
+
+        $newName = $file->getRandomName();
+        $file->move($uploadPath, $newName, true);
+
+        $relativePath = 'galeri/videos/' . $newName;
+
+        if ($existingFilename && $existingFilename !== $relativePath) {
+            $this->deleteUploadedFile($existingFilename);
+        }
+
+        return $relativePath;
+    }
+
+    private function deleteUploadedFile(?string $filename): void
     {
         if (empty($filename) || preg_match('#^https?://#i', (string) $filename)) {
             return;
         }
 
-        $cleanName = str_replace('\\', '/', (string) $filename);
+        $cleanName = str_replace('\\', '/', trim((string) $filename));
         $cleanName = ltrim($cleanName, '/');
 
         if (strpos($cleanName, 'uploads/') === 0) {
@@ -196,5 +260,10 @@ class GaleriController extends BaseController
         if (is_file($filePath)) {
             @unlink($filePath);
         }
+    }
+
+    private function isNoFile(?UploadedFile $file): bool
+    {
+        return $file === null || $file->getError() === UPLOAD_ERR_NO_FILE;
     }
 }

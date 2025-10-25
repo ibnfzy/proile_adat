@@ -7,6 +7,7 @@ use App\Models\ArtikelModel;
 use App\Models\KategoriArtikelModel;
 use App\Models\UserModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class ArtikelController extends BaseController
@@ -58,11 +59,12 @@ class ArtikelController extends BaseController
     public function store(): RedirectResponse
     {
         $rules = [
-            'judul'       => 'required|min_length[5]|max_length[255]',
-            'isi'         => 'required',
-            'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
-            'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
+            'judul'        => 'required|min_length[5]|max_length[255]',
+            'isi'          => 'required',
+            'kategori_id'  => 'required|is_not_unique[kategori_artikel.id]',
+            'penulis_id'   => 'required|is_not_unique[users.id]',
+            'gambar.*'     => 'if_exist|is_image[gambar.*]|mime_in[gambar.*,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar.*,4096]',
+            'video'        => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
         ];
 
         if (! $this->validate($rules)) {
@@ -72,14 +74,18 @@ class ArtikelController extends BaseController
         $judul = (string) $this->request->getPost('judul');
         $slug  = $this->generateSlug($judul);
 
-        $gambarFile     = $this->request->getFile('gambar');
-        $gambarFilename = $this->handleUploadedImage($gambarFile);
+        $uploadedImages = $this->request->getFileMultiple('gambar');
+        $storedImages   = $this->processImageUploads($uploadedImages);
+
+        $videoFile     = $this->request->getFile('video');
+        $videoFilename = $this->storeVideoFile($videoFile);
 
         $this->artikelModel->insert([
             'judul'       => $judul,
             'slug'        => $slug,
             'isi'         => (string) $this->request->getPost('isi'),
-            'gambar'      => $gambarFilename,
+            'gambar'      => ! empty($storedImages) ? json_encode($storedImages) : null,
+            'video'       => $videoFilename,
             'kategori_id' => (int) $this->request->getPost('kategori_id'),
             'penulis_id'  => (int) $this->request->getPost('penulis_id'),
         ]);
@@ -99,6 +105,8 @@ class ArtikelController extends BaseController
             throw PageNotFoundException::forPageNotFound('Artikel tidak ditemukan.');
         }
 
+        $artikel['images'] = $this->decodeImageList($artikel['gambar'] ?? null);
+
         return view('admin/artikel/show', [
             'pageTitle' => 'Preview Artikel',
             'artikel'   => $artikel,
@@ -112,6 +120,8 @@ class ArtikelController extends BaseController
         if (! $artikel) {
             throw PageNotFoundException::forPageNotFound('Artikel tidak ditemukan.');
         }
+
+        $artikel['images'] = $this->decodeImageList($artikel['gambar'] ?? null);
 
         return view('admin/artikel/edit', [
             'pageTitle'  => 'Edit Artikel',
@@ -134,7 +144,8 @@ class ArtikelController extends BaseController
             'isi'         => 'required',
             'kategori_id' => 'required|is_not_unique[kategori_artikel.id]',
             'penulis_id'  => 'required|is_not_unique[users.id]',
-            'gambar'      => 'if_exist|is_image[gambar]|mime_in[gambar,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar,4096]',
+            'gambar.*'    => 'if_exist|is_image[gambar.*]|mime_in[gambar.*,image/jpg,image/jpeg,image/png,image/webp]|max_size[gambar.*,4096]',
+            'video'       => 'if_exist|mime_in[video,video/mp4,video/webm,video/ogg]|max_size[video,51200]',
         ];
 
         if (! $this->validate($rules)) {
@@ -148,8 +159,26 @@ class ArtikelController extends BaseController
             $slug = $this->generateSlug($judul, $id);
         }
 
-        $gambarFile     = $this->request->getFile('gambar');
-        $gambarFilename = $this->handleUploadedImage($gambarFile, $artikel['gambar'] ?? null);
+        $existingImages = $this->decodeImageList($artikel['gambar'] ?? null);
+        $removeImages   = array_map('strval', (array) $this->request->getPost('remove_images'));
+
+        if (! empty($removeImages)) {
+            foreach ($removeImages as $imagePath) {
+                $this->deleteUploadedFile($imagePath);
+            }
+        }
+
+        $remainingImages = array_values(array_filter(
+            $existingImages,
+            static fn (string $image) => ! in_array($image, $removeImages, true)
+        ));
+
+        $newImages   = $this->processImageUploads($this->request->getFileMultiple('gambar'));
+        $finalImages = array_values(array_merge($remainingImages, $newImages));
+
+        $videoFile     = $this->request->getFile('video');
+        $removeVideo   = (bool) $this->request->getPost('remove_video');
+        $videoFilename = $this->storeVideoFile($videoFile, $artikel['video'] ?? null, $removeVideo);
 
         $updateData = [
             'judul'       => $judul,
@@ -157,10 +186,11 @@ class ArtikelController extends BaseController
             'isi'         => (string) $this->request->getPost('isi'),
             'kategori_id' => (int) $this->request->getPost('kategori_id'),
             'penulis_id'  => (int) $this->request->getPost('penulis_id'),
+            'gambar'      => ! empty($finalImages) ? json_encode($finalImages) : null,
         ];
 
-        if ($gambarFilename !== null) {
-            $updateData['gambar'] = $gambarFilename;
+        if ($removeVideo || $videoFilename !== ($artikel['video'] ?? null)) {
+            $updateData['video'] = $videoFilename;
         }
 
         $this->artikelModel->update($id, $updateData);
@@ -176,9 +206,11 @@ class ArtikelController extends BaseController
             throw PageNotFoundException::forPageNotFound('Artikel tidak ditemukan.');
         }
 
-        if (! empty($artikel['gambar'])) {
-            $this->deleteUploadedImage($artikel['gambar']);
+        foreach ($this->decodeImageList($artikel['gambar'] ?? null) as $imagePath) {
+            $this->deleteUploadedFile($imagePath);
         }
+
+        $this->deleteUploadedFile($artikel['video'] ?? null);
 
         $this->artikelModel->delete($id);
 
@@ -211,17 +243,80 @@ class ArtikelController extends BaseController
         return $builder->countAllResults() > 0;
     }
 
-    private function handleUploadedImage($file, ?string $existingFilename = null): ?string
+    private function decodeImageList($value): array
     {
+        if (empty($value)) {
+            return [];
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return array_values(array_filter(array_map('strval', $decoded)));
+            }
+
+            return [$value];
+        }
+
+        if (is_array($value)) {
+            return array_values(array_filter(array_map('strval', $value)));
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array<int, UploadedFile>|null $files
+     */
+    private function processImageUploads(?array $files): array
+    {
+        if (empty($files)) {
+            return [];
+        }
+
+        $storedImages = [];
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
+            if ($file->getError() === UPLOAD_ERR_NO_FILE || ! $file->isValid()) {
+                continue;
+            }
+
+            $uploadPath = ROOTPATH . 'public/uploads/artikel';
+
+            if (! is_dir($uploadPath)) {
+                mkdir($uploadPath, 0775, true);
+            }
+
+            $newName = $file->getRandomName();
+            $file->move($uploadPath, $newName, true);
+
+            $storedImages[] = 'artikel/' . $newName;
+        }
+
+        return $storedImages;
+    }
+
+    private function storeVideoFile(?UploadedFile $file, ?string $existing = null, bool $forceRemove = false): ?string
+    {
+        if ($forceRemove && $existing) {
+            $this->deleteUploadedFile($existing);
+            $existing = null;
+        }
+
         if (! $file || $file->getError() === UPLOAD_ERR_NO_FILE) {
-            return null;
+            return $existing;
         }
 
         if (! $file->isValid()) {
-            return $existingFilename;
+            return $existing;
         }
 
-        $uploadPath = ROOTPATH . 'public/uploads';
+        $uploadPath = ROOTPATH . 'public/uploads/artikel/videos';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
@@ -230,20 +325,23 @@ class ArtikelController extends BaseController
         $newName = $file->getRandomName();
         $file->move($uploadPath, $newName, true);
 
-        if ($existingFilename) {
-            $this->deleteUploadedImage($existingFilename);
+        $relativePath = 'artikel/videos/' . $newName;
+
+        if ($existing && $existing !== $relativePath) {
+            $this->deleteUploadedFile($existing);
         }
 
-        return $newName;
+        return $relativePath;
     }
 
-    private function deleteUploadedImage(?string $filename): void
+    private function deleteUploadedFile(?string $filename): void
     {
         if (empty($filename) || preg_match('#^https?://#i', (string) $filename)) {
             return;
         }
 
-        $cleanName = str_replace('\\', '/', ltrim((string) $filename, '/'));
+        $cleanName = str_replace('\\', '/', trim((string) $filename));
+        $cleanName = ltrim($cleanName, '/');
 
         if (strpos($cleanName, 'uploads/') === 0) {
             $cleanName = substr($cleanName, strlen('uploads/')) ?: '';

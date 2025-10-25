@@ -14,6 +14,7 @@ class GaleriModel extends Model
         'judul',
         'gambar',
         'deskripsi',
+        'video',
     ];
 
     protected $useTimestamps = true;

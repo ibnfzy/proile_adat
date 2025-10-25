@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="<?= base_url('website_assets/style.css') ?>">
 </head>
 
-<body>
+<body data-music-url="<?= esc($musicUrl ?? '', 'attr'); ?>">
   <!-- ===== Header / Navigasi ===== -->
   <header class="header" id="header">
     <div class="container">
@@ -59,7 +59,15 @@
     </div>
   </footer>
 
-    <script src="<?= base_url('website_assets/app.js') ?>"></script>
+  <div id="musicPlayer" class="music-player" hidden>
+    <button type="button" id="musicToggle" class="music-toggle" aria-pressed="false">
+      <span class="music-icon" aria-hidden="true">♪</span>
+      <span class="music-label">Putar Musik</span>
+    </button>
+  </div>
+  <div id="youtubeMusicPlayer" class="music-hidden-player" aria-hidden="true"></div>
+
+  <script src="<?= base_url('website_assets/app.js') ?>"></script>
 </body>
 
 </html>

@@ -17,6 +17,7 @@ class ArtikelModel extends Model
         'slug',
         'isi',
         'gambar',
+        'video',
         'kategori_id',
         'penulis_id',
     ];
