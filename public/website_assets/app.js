@@ -1524,7 +1524,7 @@ function initBackgroundMusic() {
       width: "0",
       videoId,
       playerVars: {
-        autoplay: 0,
+        autoplay: 1,
         controls: 0,
         loop: 1,
         playlist: videoId,
@@ -1532,8 +1532,18 @@ function initBackgroundMusic() {
         modestbranding: 1,
       },
       events: {
-        onReady: () => {
-          updateMusicToggleUI(false);
+        onReady: (event) => {
+          const playerInstance = event && event.target ? event.target : null;
+
+          if (playerInstance) {
+            try {
+              playerInstance.unMute();
+            } catch (error) {
+              // Ignore errors caused by autoplay policies.
+            }
+
+            playerInstance.playVideo();
+          }
         },
         onStateChange: (event) => {
           const isPlaying = event.data === YT.PlayerState.PLAYING;
