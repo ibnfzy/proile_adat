@@ -26,6 +26,9 @@
   $flashError = $session->getFlashdata('error');
   $modalErrors = $session->getFlashdata('errors') ?? [];
   $shouldOpenSettingsModal = $session->getFlashdata('openSettingsModal');
+  $pengaturanModel = new \App\Models\PengaturanModel();
+  $currentMusicUrl = (string) ($pengaturanModel->getValue('music_url') ?? '');
+  $musicUrlValue = old('music_url', $currentMusicUrl);
   ?>
   <!-- ===== Preloader Start ===== -->
   <div x-show="loaded"
@@ -172,6 +175,14 @@
               value="<?= esc(old('email', (string) ($session->get('email') ?? ''))); ?>"
               class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40"
               required>
+          </div>
+
+          <div class="space-y-1">
+            <label for="music_url" class="block text-sm font-medium text-gray-700 dark:text-gray-200">URL Musik Latar</label>
+            <input type="url" id="music_url" name="music_url"
+              value="<?= esc($musicUrlValue); ?>"
+              class="block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/40" />
+            <p class="text-xs text-gray-500 dark:text-gray-400">Kosongkan untuk menonaktifkan pemutaran musik otomatis.</p>
           </div>
 
           <div class="space-y-1">
