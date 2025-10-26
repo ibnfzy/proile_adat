@@ -276,7 +276,7 @@ class GaleriController extends BaseController
             return $existingFilename;
         }
 
-        $uploadPath = '/galeri/videos';
+        $uploadPath = 'uploads/galeri/videos';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
