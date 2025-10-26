@@ -243,7 +243,7 @@ class GaleriController extends BaseController
             return $existingFilename;
         }
 
-        $uploadPath = ROOTPATH . 'public/uploads/galeri';
+        $uploadPath = 'uploads/galeri';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
@@ -276,7 +276,7 @@ class GaleriController extends BaseController
             return $existingFilename;
         }
 
-        $uploadPath = ROOTPATH . 'public/uploads/galeri/videos';
+        $uploadPath = '/galeri/videos';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
@@ -311,7 +311,7 @@ class GaleriController extends BaseController
             return;
         }
 
-        $filePath = ROOTPATH . 'public/uploads/' . $cleanName;
+        $filePath = 'uploads/' . $cleanName;
 
         if (is_file($filePath)) {
             @unlink($filePath);

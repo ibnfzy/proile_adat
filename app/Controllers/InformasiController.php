@@ -197,7 +197,7 @@ class InformasiController extends BaseController
             return $existingFilename;
         }
 
-        $uploadPath = ROOTPATH . 'public/uploads';
+        $uploadPath = 'uploads';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
@@ -229,7 +229,7 @@ class InformasiController extends BaseController
             return;
         }
 
-        $filePath = ROOTPATH . 'public/uploads/' . $cleanName;
+        $filePath = 'uploads/' . $cleanName;
 
         if (is_file($filePath)) {
             @unlink($filePath);

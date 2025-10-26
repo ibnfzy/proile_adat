@@ -170,7 +170,7 @@ class ArtikelController extends BaseController
 
         $remainingImages = array_values(array_filter(
             $existingImages,
-            static fn (string $image) => ! in_array($image, $removeImages, true)
+            static fn(string $image) => ! in_array($image, $removeImages, true)
         ));
 
         $newImages   = $this->processImageUploads($this->request->getFileMultiple('gambar'));
@@ -286,7 +286,7 @@ class ArtikelController extends BaseController
                 continue;
             }
 
-            $uploadPath = ROOTPATH . 'public/uploads/artikel';
+            $uploadPath = 'uploads/artikel';
 
             if (! is_dir($uploadPath)) {
                 mkdir($uploadPath, 0775, true);
@@ -316,7 +316,7 @@ class ArtikelController extends BaseController
             return $existing;
         }
 
-        $uploadPath = ROOTPATH . 'public/uploads/artikel/videos';
+        $uploadPath = 'uploads/artikel/videos';
 
         if (! is_dir($uploadPath)) {
             mkdir($uploadPath, 0775, true);
@@ -351,7 +351,7 @@ class ArtikelController extends BaseController
             return;
         }
 
-        $filePath = ROOTPATH . 'public/uploads/' . $cleanName;
+        $filePath = 'uploads/' . $cleanName;
 
         if (is_file($filePath)) {
             @unlink($filePath);
