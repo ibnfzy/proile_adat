@@ -19,6 +19,9 @@
     <article class="informasi-detail" id="informasiDetail">
       <!-- Content will be loaded by JavaScript -->
     </article>
+    <section id="informasiCommentSection" class="comment-section" aria-live="polite">
+      <!-- Comment section will be injected by JavaScript -->
+    </section>
   </div>
 </section>
 
