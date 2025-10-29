@@ -17,6 +17,8 @@ $routes->group('api', static function (RouteCollection $routes) {
     $routes->get('artikel', 'Api\WebsiteApiController::artikel');
     $routes->get('informasi', 'Api\WebsiteApiController::informasi');
     $routes->get('galeri', 'Api\WebsiteApiController::galeri');
+    $routes->get('komentar', 'Api\CommentController::index');
+    $routes->post('komentar', 'Api\CommentController::create');
 });
 
 $routes->get('/login', 'AuthController::login');
@@ -51,6 +53,10 @@ $routes->group('Admin', function (RouteCollection $routes) {
   $routes->get('informasi/(:num)/edit', 'InformasiController::edit/$1');
   $routes->post('informasi/(:num)/update', 'InformasiController::update/$1');
   $routes->post('informasi/(:num)/delete', 'InformasiController::delete/$1');
+
+  // Komentar
+  $routes->get('komentar', 'KomentarController::index');
+  $routes->post('komentar/(:num)/status', 'KomentarController::updateStatus/$1');
 
   // Galeri
   $routes->get('galeri', 'GaleriController::index');

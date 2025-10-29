@@ -109,6 +109,22 @@
           </li>
 
           <li>
+            <a href="/Admin/komentar" class="menu-item group">
+
+              <svg class="menu-item-icon-inactive" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640">
+                <path
+                  d="M96 96C60.7 96 32 124.7 32 160L32 384C32 419.3 60.7 448 96 448L160 448 160 528C160 544.3 176.2 554.3 189.3 546.7L320 448 544 448C579.3 448 608 419.3 608 384L608 160C608 124.7 579.3 96 544 96L96 96zM160 224C177.7 224 192 238.3 192 256C192 273.7 177.7 288 160 288C142.3 288 128 273.7 128 256C128 238.3 142.3 224 160 224zM320 224C337.7 224 352 238.3 352 256C352 273.7 337.7 288 320 288C302.3 288 288 273.7 288 256C288 238.3 302.3 224 320 224zM480 224C497.7 224 512 238.3 512 256C512 273.7 497.7 288 480 288C462.3 288 448 273.7 448 256C448 238.3 462.3 224 480 224z" />
+              </svg>
+
+
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                Moderasi Komentar
+              </span>
+            </a>
+          </li>
+
+          <li>
             <button type="button" class="menu-item group" data-modal-target="settings-modal">
 
               <svg class="menu-item-icon-inactive" width="24" height="24" xmlns="http://www.w3.org/2000/svg"

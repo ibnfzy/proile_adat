@@ -15,6 +15,7 @@ const API_ENDPOINTS = {
   artikel: joinWithBase("api/artikel"),
   galeri: joinWithBase("api/galeri"),
   informasi: joinWithBase("api/informasi"),
+  komentar: joinWithBase("api/komentar"),
 };
 
 const PAGE_URLS = {
@@ -660,6 +661,482 @@ async function fetchInformasiData() {
   return data;
 }
 
+const COMMENT_STORAGE_KEY = "commentCredentials";
+const COMMENT_IDENTITY_KEY = "commentIdentity";
+const COMMENT_RATE_LIMIT = Object.freeze({
+  windowMs: 5 * 60 * 1000,
+  maxAttempts: 3,
+  duplicateWindowMs: 2 * 60 * 1000,
+  blockDurationMs: 10 * 60 * 1000,
+});
+
+function formatDateTimeWithClock(dateString) {
+  if (!dateString) {
+    return "";
+  }
+
+  try {
+    return new Date(dateString).toLocaleString("id-ID", {
+      dateStyle: "long",
+      timeStyle: "short",
+    });
+  } catch (error) {
+    return dateString;
+  }
+}
+
+function getCommentStore() {
+  try {
+    const raw = window.localStorage.getItem(COMMENT_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveCommentStore(store) {
+  try {
+    window.localStorage.setItem(COMMENT_STORAGE_KEY, JSON.stringify(store));
+  } catch (error) {
+    // Ignore write errors (private mode, quota exceeded, etc.)
+  }
+}
+
+function getCommentIdentity() {
+  try {
+    const raw = window.localStorage.getItem(COMMENT_IDENTITY_KEY);
+    if (!raw) {
+      return { name: "", email: "" };
+    }
+
+    const parsed = JSON.parse(raw);
+    return {
+      name: typeof parsed?.name === "string" ? parsed.name : "",
+      email: typeof parsed?.email === "string" ? parsed.email : "",
+    };
+  } catch (error) {
+    return { name: "", email: "" };
+  }
+}
+
+function saveCommentIdentity(identity) {
+  try {
+    window.localStorage.setItem(
+      COMMENT_IDENTITY_KEY,
+      JSON.stringify({
+        name: identity.name || "",
+        email: identity.email || "",
+      })
+    );
+  } catch (error) {
+    // Ignore errors
+  }
+}
+
+function hashCommentText(text) {
+  const value = String(text ?? "");
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(index);
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return hash;
+}
+
+function evaluateCommentAttempt(contentKey, message) {
+  const now = Date.now();
+  const store = getCommentStore();
+  const entry = {
+    attempts: 0,
+    firstAttempt: now,
+    blockedUntil: 0,
+    lastMessageHash: 0,
+    lastSubmittedAt: 0,
+    ...(store[contentKey] || {}),
+  };
+
+  if (entry.blockedUntil && now < entry.blockedUntil) {
+    return {
+      allowed: false,
+      reason: `Anda dibatasi hingga ${new Date(
+        entry.blockedUntil
+      ).toLocaleTimeString("id-ID")}. Coba lagi nanti.`,
+    };
+  }
+
+  if (!entry.firstAttempt || now - entry.firstAttempt > COMMENT_RATE_LIMIT.windowMs) {
+    entry.firstAttempt = now;
+    entry.attempts = 0;
+  }
+
+  const messageHash = hashCommentText(message);
+  if (
+    entry.lastMessageHash === messageHash &&
+    entry.lastSubmittedAt &&
+    now - entry.lastSubmittedAt < COMMENT_RATE_LIMIT.duplicateWindowMs
+  ) {
+    entry.blockedUntil = now + COMMENT_RATE_LIMIT.blockDurationMs;
+    store[contentKey] = entry;
+    saveCommentStore(store);
+    return {
+      allowed: false,
+      reason:
+        "Komentar serupa terdeteksi. Mohon tunggu beberapa saat sebelum mencoba lagi.",
+    };
+  }
+
+  entry.attempts += 1;
+
+  if (entry.attempts > COMMENT_RATE_LIMIT.maxAttempts) {
+    entry.blockedUntil = now + COMMENT_RATE_LIMIT.blockDurationMs;
+    store[contentKey] = entry;
+    saveCommentStore(store);
+    return {
+      allowed: false,
+      reason: "Anda terlalu sering mengirim komentar. Coba lagi beberapa saat.",
+    };
+  }
+
+  entry.lastAttemptAt = now;
+  store[contentKey] = entry;
+  saveCommentStore(store);
+
+  return { allowed: true };
+}
+
+function rollbackCommentAttempt(contentKey) {
+  const store = getCommentStore();
+  const entry = store[contentKey];
+
+  if (!entry) {
+    return;
+  }
+
+  entry.attempts = Math.max(0, (entry.attempts || 1) - 1);
+  store[contentKey] = entry;
+  saveCommentStore(store);
+}
+
+function registerCommentSuccess(contentKey, message) {
+  const store = getCommentStore();
+  const now = Date.now();
+
+  store[contentKey] = {
+    attempts: 0,
+    firstAttempt: now,
+    blockedUntil: 0,
+    lastMessageHash: hashCommentText(message),
+    lastSubmittedAt: now,
+  };
+
+  saveCommentStore(store);
+}
+
+function generateCaptchaQuestion() {
+  const captchaA = Math.floor(Math.random() * 8) + 2; // 2-9
+  const captchaB = Math.floor(Math.random() * 8) + 2;
+  return {
+    a: captchaA,
+    b: captchaB,
+    question: `${captchaA} + ${captchaB} = ?`,
+  };
+}
+
+function refreshCaptchaElements(wrapper, captcha) {
+  if (!wrapper) {
+    return;
+  }
+
+  const questionLabel = wrapper.querySelector('[data-role="captcha-question"]');
+  const inputA = wrapper.querySelector('input[name="captcha_a"]');
+  const inputB = wrapper.querySelector('input[name="captcha_b"]');
+  const answerInput = wrapper.querySelector('input[name="captcha_answer"]');
+
+  if (questionLabel) {
+    questionLabel.textContent = captcha.question;
+  }
+
+  if (inputA) {
+    inputA.value = captcha.a;
+  }
+
+  if (inputB) {
+    inputB.value = captcha.b;
+  }
+
+  if (answerInput) {
+    answerInput.value = "";
+  }
+}
+
+async function fetchCommentList(type, id) {
+  if (!type || !id) {
+    return [];
+  }
+
+  const url = new URL(API_ENDPOINTS.komentar, window.location.origin);
+  url.searchParams.set("type", type);
+  url.searchParams.set("id", String(id));
+
+  const response = await fetch(url.toString(), {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gagal memuat komentar: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload : [];
+}
+
+async function submitCommentForm(formData) {
+  const response = await fetch(API_ENDPOINTS.komentar, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+    body: formData,
+  });
+
+  let payload = {};
+  try {
+    payload = await response.json();
+  } catch (error) {
+    // Ignore JSON parse errors
+  }
+
+  if (!response.ok) {
+    const message = payload?.message || "Gagal mengirim komentar.";
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+function renderCommentList(container, comments) {
+  if (!container) {
+    return;
+  }
+
+  if (!Array.isArray(comments) || comments.length === 0) {
+    container.innerHTML =
+      '<p class="comment-empty">Belum ada komentar. Jadilah yang pertama memberikan komentar!</p>';
+    return;
+  }
+
+  const items = comments
+    .map((comment) => {
+      const name = escapeHtml(comment.nama ?? "Pengunjung");
+      const message = escapeHtml(comment.komentar ?? "");
+      const timestamp = formatDateTimeWithClock(comment.created_at ?? "");
+
+      return `
+        <article class="comment-item">
+          <div class="comment-meta">
+            <h4 class="comment-author">${name}</h4>
+            <time class="comment-time" datetime="${escapeHtml(
+              comment.created_at ?? ""
+            )}">${escapeHtml(timestamp)}</time>
+          </div>
+          <p class="comment-message">${message.replace(/\n/g, "<br>")}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  container.innerHTML = items;
+}
+
+function initCommentSection({ container, type, contentId, title }) {
+  if (!container || !contentId) {
+    return;
+  }
+
+  const headingTitle = type === "artikel" ? "Komentar Artikel" : "Komentar Informasi";
+  container.innerHTML = `
+    <div class="comment-wrapper">
+      <div class="comment-header">
+        <h3>${headingTitle}</h3>
+        <p>Berikan tanggapan Anda mengenai ${escapeHtml(title ?? "konten ini")}.</p>
+      </div>
+      <div class="comment-list" data-role="comment-list"></div>
+      <div class="comment-form-wrapper">
+        <h4>Tinggalkan Komentar</h4>
+        <form class="comment-form" novalidate>
+          <div class="comment-feedback" data-role="comment-feedback" aria-live="polite"></div>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Nama Lengkap <span class="required">*</span></span>
+              <input type="text" name="nama" autocomplete="name" maxlength="100" required />
+            </label>
+            <label class="form-field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" maxlength="255" placeholder="Opsional" />
+            </label>
+          </div>
+          <label class="form-field">
+            <span>Komentar Anda <span class="required">*</span></span>
+            <textarea name="komentar" rows="4" maxlength="1000" required placeholder="Tulis komentar terbaik Anda di sini..."></textarea>
+          </label>
+          <div class="form-field captcha-field" data-role="captcha-wrapper">
+            <div class="captcha-label">
+              <span>Verifikasi Captcha <span class="required">*</span></span>
+              <button type="button" class="captcha-refresh" data-role="captcha-refresh" aria-label="Muat ulang captcha">↻</button>
+            </div>
+            <div class="captcha-question" data-role="captcha-question"></div>
+            <input type="number" name="captcha_answer" inputmode="numeric" pattern="[0-9]*" required placeholder="Jawaban Anda" />
+            <input type="hidden" name="captcha_a" value="" />
+            <input type="hidden" name="captcha_b" value="" />
+          </div>
+          <button type="submit" class="comment-submit" data-role="comment-submit">
+            Kirim Komentar
+          </button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const listContainer = container.querySelector('[data-role="comment-list"]');
+  const form = container.querySelector('form.comment-form');
+  const feedbackBox = container.querySelector('[data-role="comment-feedback"]');
+  const submitButton = container.querySelector('[data-role="comment-submit"]');
+  const captchaWrapper = container.querySelector('[data-role="captcha-wrapper"]');
+  const refreshButton = container.querySelector('[data-role="captcha-refresh"]');
+
+  const identity = getCommentIdentity();
+  const nameInput = form?.querySelector('input[name="nama"]');
+  const emailInput = form?.querySelector('input[name="email"]');
+
+  if (nameInput && identity.name) {
+    nameInput.value = identity.name;
+  }
+
+  if (emailInput && identity.email) {
+    emailInput.value = identity.email;
+  }
+
+  let currentCaptcha = generateCaptchaQuestion();
+  refreshCaptchaElements(captchaWrapper, currentCaptcha);
+
+  const loadComments = async () => {
+    if (!listContainer) {
+      return;
+    }
+
+    listContainer.innerHTML = '<p class="comment-loading">Memuat komentar...</p>';
+
+    try {
+      const comments = await fetchCommentList(type, contentId);
+      renderCommentList(listContainer, comments);
+    } catch (error) {
+      listContainer.innerHTML = `<p class="comment-error">${escapeHtml(
+        error.message || 'Gagal memuat komentar.'
+      )}</p>`;
+    }
+  };
+
+  loadComments();
+
+  if (refreshButton) {
+    refreshButton.addEventListener('click', () => {
+      currentCaptcha = generateCaptchaQuestion();
+      refreshCaptchaElements(captchaWrapper, currentCaptcha);
+    });
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!form || !submitButton) {
+      return;
+    }
+
+    const formData = new FormData(form);
+    const nama = (formData.get('nama') || '').toString().trim();
+    const email = (formData.get('email') || '').toString().trim();
+    const komentar = (formData.get('komentar') || '').toString().trim();
+    const captchaAnswer = (formData.get('captcha_answer') || '').toString().trim();
+
+    if (!nama || !komentar || !captchaAnswer) {
+      if (feedbackBox) {
+        feedbackBox.textContent = 'Mohon lengkapi semua field yang wajib diisi.';
+        feedbackBox.className = 'comment-feedback is-error';
+      }
+      return;
+    }
+
+    const contentKey = `${type}:${contentId}`;
+    const rateResult = evaluateCommentAttempt(contentKey, komentar);
+
+    if (!rateResult.allowed) {
+      if (feedbackBox) {
+        feedbackBox.textContent = rateResult.reason || 'Anda sementara dibatasi untuk mengirim komentar.';
+        feedbackBox.className = 'comment-feedback is-error';
+      }
+      currentCaptcha = generateCaptchaQuestion();
+      refreshCaptchaElements(captchaWrapper, currentCaptcha);
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.classList.add('is-loading');
+    if (feedbackBox) {
+      feedbackBox.textContent = '';
+      feedbackBox.className = 'comment-feedback';
+    }
+
+    formData.set('content_type', type);
+    formData.set('content_id', String(contentId));
+    formData.set('captcha_a', String(currentCaptcha.a));
+    formData.set('captcha_b', String(currentCaptcha.b));
+
+    try {
+      await submitCommentForm(formData);
+
+      if (feedbackBox) {
+        feedbackBox.textContent = 'Komentar berhasil dikirim dan menunggu persetujuan admin.';
+        feedbackBox.className = 'comment-feedback is-success';
+      }
+
+      registerCommentSuccess(contentKey, komentar);
+      saveCommentIdentity({ name: nama, email });
+
+      form.reset();
+      if (nameInput) {
+        nameInput.value = nama;
+      }
+      if (emailInput) {
+        emailInput.value = email;
+      }
+
+      currentCaptcha = generateCaptchaQuestion();
+      refreshCaptchaElements(captchaWrapper, currentCaptcha);
+
+      await loadComments();
+    } catch (error) {
+      rollbackCommentAttempt(contentKey);
+
+      if (feedbackBox) {
+        feedbackBox.textContent = error.message || 'Gagal mengirim komentar.';
+        feedbackBox.className = 'comment-feedback is-error';
+      }
+    } finally {
+      submitButton.disabled = false;
+      submitButton.classList.remove('is-loading');
+
+      if (!submitButton.textContent) {
+        submitButton.textContent = 'Kirim Komentar';
+      }
+    }
+  });
+}
+
 // ===== Navigation =====
 function initNavigation(isHomePage) {
   const header = document.getElementById("header");
@@ -989,6 +1466,14 @@ async function initInformasiDetailPage() {
         `;
 
     attachLightboxToImages(detailContainer);
+
+    const commentSection = document.getElementById("informasiCommentSection");
+    initCommentSection({
+      container: commentSection,
+      type: "informasi",
+      contentId: informasi.id,
+      title: informasi.title,
+    });
   } catch (error) {
     console.error("Error loading informasi detail:", error);
     detailContainer.innerHTML = "<p>Gagal memuat informasi</p>";
@@ -1320,6 +1805,13 @@ async function initArtikelDetailPage() {
         `;
 
     initMediaSliders(detailContainer);
+    const commentSection = document.getElementById("artikelCommentSection");
+    initCommentSection({
+      container: commentSection,
+      type: "artikel",
+      contentId: artikel.id,
+      title: artikel.title,
+    });
     registerMediaInterruptors(detailContainer);
     renderRelatedArtikel(artikel, artikelData);
     attachLightboxToImages(detailContainer);

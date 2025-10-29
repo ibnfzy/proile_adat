@@ -20,6 +20,10 @@
       <!-- Content will be loaded by JavaScript -->
     </article>
 
+    <section id="artikelCommentSection" class="comment-section" aria-live="polite">
+      <!-- Comment section will be injected by JavaScript -->
+    </section>
+
     <!-- Related Articles -->
     <div class="related-articles">
       <h3>Artikel Terkait</h3>
