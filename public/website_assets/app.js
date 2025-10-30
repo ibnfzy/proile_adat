@@ -21,8 +21,7 @@ const API_ENDPOINTS = {
 const PAGE_URLS = {
   home: BASE_URL,
   artikelList: joinWithBase("artikel"),
-  artikelDetail: (id) =>
-    `${joinWithBase("artikel/detail")}?id=${encodeId(id)}`,
+  artikelDetail: (id) => `${joinWithBase("artikel/detail")}?id=${encodeId(id)}`,
   informasiList: joinWithBase("informasi"),
   informasiDetail: (id) =>
     `${joinWithBase("informasi/detail")}?id=${encodeId(id)}`,
@@ -71,7 +70,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Rambu Solo merupakan upacara pemakaman adat yang sangat sakral bagi masyarakat Toraja, termasuk di Kecamatan Nosu.",
     image: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600",
-    images: ["https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200",
+    ],
     video: "",
     date: "2025-01-15",
     category: "adat",
@@ -95,7 +96,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Ma'badong adalah tarian dan nyanyian tradisional yang dilakukan dalam upacara adat dengan makna filosofis mendalam.",
     image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600",
-    images: ["https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200",
+    ],
     video: "",
     date: "2025-01-10",
     category: "budaya",
@@ -119,7 +122,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Tongkonan adalah rumah adat yang menjadi simbol kebesaran keluarga dengan filosofi perjalanan hidup manusia.",
     image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=600",
-    images: ["https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200",
+    ],
     video: "",
     date: "2025-01-05",
     category: "budaya",
@@ -143,7 +148,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Rambu Tuka adalah upacara adat yang dilaksanakan sebagai ungkapan syukur atas berkat dalam kehidupan.",
     image: "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=600",
-    images: ["https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200",
+    ],
     video: "",
     date: "2024-12-28",
     category: "adat",
@@ -164,7 +171,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Sistem kekerabatan berbasis Tongkonan masih menjadi pondasi struktur sosial di Kecamatan Nosu.",
     image: "https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=600",
-    images: ["https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1519817650390-35c2e43772fd?w=1200",
+    ],
     video: "",
     date: "2024-12-20",
     category: "sejarah",
@@ -185,7 +194,9 @@ const ARTIKEL_DATA = [
     excerpt:
       "Seni menenun kain tradisional masih dilestarikan oleh masyarakat Nosu dengan motif-motif khas.",
     image: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600",
-    images: ["https://images.unsplash.com/photo-1464207687429-7505649dae38?w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=1200",
+    ],
     video: "",
     date: "2024-12-15",
     category: "budaya",
@@ -232,15 +243,22 @@ const GALERI_DATA = [
 function normalizeArtikelEntry(entry = {}) {
   const normalized = { ...entry };
   const images = Array.isArray(entry.images)
-    ? entry.images.filter((value) => typeof value === "string" && value.trim() !== "")
+    ? entry.images.filter(
+        (value) => typeof value === "string" && value.trim() !== ""
+      )
     : [];
 
-  if (!images.length && typeof entry.image === "string" && entry.image.trim() !== "") {
+  if (
+    !images.length &&
+    typeof entry.image === "string" &&
+    entry.image.trim() !== ""
+  ) {
     images.push(entry.image.trim());
   }
 
   normalized.images = images;
-  normalized.image = images[0] || (typeof entry.image === "string" ? entry.image : "");
+  normalized.image =
+    images[0] || (typeof entry.image === "string" ? entry.image : "");
   normalized.video = typeof entry.video === "string" ? entry.video : "";
 
   return normalized;
@@ -615,9 +633,7 @@ async function fetchArtikelData() {
   }
 
   const data = await response.json();
-  artikelDataCache = Array.isArray(data)
-    ? data.map(normalizeArtikelEntry)
-    : [];
+  artikelDataCache = Array.isArray(data) ? data.map(normalizeArtikelEntry) : [];
   return artikelDataCache;
 }
 
@@ -636,9 +652,7 @@ async function fetchGaleriData() {
   }
 
   const data = await response.json();
-  galeriDataCache = Array.isArray(data)
-    ? data.map(normalizeGaleriEntry)
-    : [];
+  galeriDataCache = Array.isArray(data) ? data.map(normalizeGaleriEntry) : [];
   return galeriDataCache;
 }
 
@@ -771,7 +785,10 @@ function evaluateCommentAttempt(contentKey, message) {
     };
   }
 
-  if (!entry.firstAttempt || now - entry.firstAttempt > COMMENT_RATE_LIMIT.windowMs) {
+  if (
+    !entry.firstAttempt ||
+    now - entry.firstAttempt > COMMENT_RATE_LIMIT.windowMs
+  ) {
     entry.firstAttempt = now;
     entry.attempts = 0;
   }
@@ -958,12 +975,15 @@ function initCommentSection({ container, type, contentId, title }) {
     return;
   }
 
-  const headingTitle = type === "artikel" ? "Komentar Artikel" : "Komentar Informasi";
+  const headingTitle =
+    type === "artikel" ? "Komentar Artikel" : "Komentar Informasi";
   container.innerHTML = `
     <div class="comment-wrapper">
       <div class="comment-header">
         <h3>${headingTitle}</h3>
-        <p>Berikan tanggapan Anda mengenai ${escapeHtml(title ?? "konten ini")}.</p>
+        <p>Berikan tanggapan Anda mengenai ${escapeHtml(
+          title ?? "konten ini"
+        )}.</p>
       </div>
       <div class="comment-list" data-role="comment-list"></div>
       <div class="comment-form-wrapper">
@@ -983,6 +1003,7 @@ function initCommentSection({ container, type, contentId, title }) {
           <label class="form-field">
             <span>Komentar Anda <span class="required">*</span></span>
             <textarea name="komentar" rows="4" maxlength="1000" required placeholder="Tulis komentar terbaik Anda di sini..."></textarea>
+            <small>Konten minimal 5 karakter</small>
           </label>
           <div class="form-field captcha-field" data-role="captcha-wrapper">
             <div class="captcha-label">
@@ -1003,11 +1024,15 @@ function initCommentSection({ container, type, contentId, title }) {
   `;
 
   const listContainer = container.querySelector('[data-role="comment-list"]');
-  const form = container.querySelector('form.comment-form');
+  const form = container.querySelector("form.comment-form");
   const feedbackBox = container.querySelector('[data-role="comment-feedback"]');
   const submitButton = container.querySelector('[data-role="comment-submit"]');
-  const captchaWrapper = container.querySelector('[data-role="captcha-wrapper"]');
-  const refreshButton = container.querySelector('[data-role="captcha-refresh"]');
+  const captchaWrapper = container.querySelector(
+    '[data-role="captcha-wrapper"]'
+  );
+  const refreshButton = container.querySelector(
+    '[data-role="captcha-refresh"]'
+  );
 
   const identity = getCommentIdentity();
   const nameInput = form?.querySelector('input[name="nama"]');
@@ -1029,14 +1054,15 @@ function initCommentSection({ container, type, contentId, title }) {
       return;
     }
 
-    listContainer.innerHTML = '<p class="comment-loading">Memuat komentar...</p>';
+    listContainer.innerHTML =
+      '<p class="comment-loading">Memuat komentar...</p>';
 
     try {
       const comments = await fetchCommentList(type, contentId);
       renderCommentList(listContainer, comments);
     } catch (error) {
       listContainer.innerHTML = `<p class="comment-error">${escapeHtml(
-        error.message || 'Gagal memuat komentar.'
+        error.message || "Gagal memuat komentar."
       )}</p>`;
     }
   };
@@ -1044,13 +1070,13 @@ function initCommentSection({ container, type, contentId, title }) {
   loadComments();
 
   if (refreshButton) {
-    refreshButton.addEventListener('click', () => {
+    refreshButton.addEventListener("click", () => {
       currentCaptcha = generateCaptchaQuestion();
       refreshCaptchaElements(captchaWrapper, currentCaptcha);
     });
   }
 
-  form?.addEventListener('submit', async (event) => {
+  form?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     if (!form || !submitButton) {
@@ -1058,15 +1084,18 @@ function initCommentSection({ container, type, contentId, title }) {
     }
 
     const formData = new FormData(form);
-    const nama = (formData.get('nama') || '').toString().trim();
-    const email = (formData.get('email') || '').toString().trim();
-    const komentar = (formData.get('komentar') || '').toString().trim();
-    const captchaAnswer = (formData.get('captcha_answer') || '').toString().trim();
+    const nama = (formData.get("nama") || "").toString().trim();
+    const email = (formData.get("email") || "").toString().trim();
+    const komentar = (formData.get("komentar") || "").toString().trim();
+    const captchaAnswer = (formData.get("captcha_answer") || "")
+      .toString()
+      .trim();
 
     if (!nama || !komentar || !captchaAnswer) {
       if (feedbackBox) {
-        feedbackBox.textContent = 'Mohon lengkapi semua field yang wajib diisi.';
-        feedbackBox.className = 'comment-feedback is-error';
+        feedbackBox.textContent =
+          "Mohon lengkapi semua field yang wajib diisi.";
+        feedbackBox.className = "comment-feedback is-error";
       }
       return;
     }
@@ -1076,8 +1105,10 @@ function initCommentSection({ container, type, contentId, title }) {
 
     if (!rateResult.allowed) {
       if (feedbackBox) {
-        feedbackBox.textContent = rateResult.reason || 'Anda sementara dibatasi untuk mengirim komentar.';
-        feedbackBox.className = 'comment-feedback is-error';
+        feedbackBox.textContent =
+          rateResult.reason ||
+          "Anda sementara dibatasi untuk mengirim komentar.";
+        feedbackBox.className = "comment-feedback is-error";
       }
       currentCaptcha = generateCaptchaQuestion();
       refreshCaptchaElements(captchaWrapper, currentCaptcha);
@@ -1085,23 +1116,24 @@ function initCommentSection({ container, type, contentId, title }) {
     }
 
     submitButton.disabled = true;
-    submitButton.classList.add('is-loading');
+    submitButton.classList.add("is-loading");
     if (feedbackBox) {
-      feedbackBox.textContent = '';
-      feedbackBox.className = 'comment-feedback';
+      feedbackBox.textContent = "";
+      feedbackBox.className = "comment-feedback";
     }
 
-    formData.set('content_type', type);
-    formData.set('content_id', String(contentId));
-    formData.set('captcha_a', String(currentCaptcha.a));
-    formData.set('captcha_b', String(currentCaptcha.b));
+    formData.set("content_type", type);
+    formData.set("content_id", String(contentId));
+    formData.set("captcha_a", String(currentCaptcha.a));
+    formData.set("captcha_b", String(currentCaptcha.b));
 
     try {
       await submitCommentForm(formData);
 
       if (feedbackBox) {
-        feedbackBox.textContent = 'Komentar berhasil dikirim dan menunggu persetujuan admin.';
-        feedbackBox.className = 'comment-feedback is-success';
+        feedbackBox.textContent =
+          "Komentar berhasil dikirim dan menunggu persetujuan admin.";
+        feedbackBox.className = "comment-feedback is-success";
       }
 
       registerCommentSuccess(contentKey, komentar);
@@ -1123,15 +1155,15 @@ function initCommentSection({ container, type, contentId, title }) {
       rollbackCommentAttempt(contentKey);
 
       if (feedbackBox) {
-        feedbackBox.textContent = error.message || 'Gagal mengirim komentar.';
-        feedbackBox.className = 'comment-feedback is-error';
+        feedbackBox.textContent = error.message || "Gagal mengirim komentar.";
+        feedbackBox.className = "comment-feedback is-error";
       }
     } finally {
       submitButton.disabled = false;
-      submitButton.classList.remove('is-loading');
+      submitButton.classList.remove("is-loading");
 
       if (!submitButton.textContent) {
-        submitButton.textContent = 'Kirim Komentar';
+        submitButton.textContent = "Kirim Komentar";
       }
     }
   });
@@ -1247,10 +1279,7 @@ function initNavigation(isHomePage) {
 
         const normalizedTarget = scrollTarget.replace(/^#/, "");
 
-        link.classList.toggle(
-          "active",
-          normalizedTarget === currentSection
-        );
+        link.classList.toggle("active", normalizedTarget === currentSection);
       });
     });
   }
@@ -1282,11 +1311,15 @@ async function initHomePage() {
         card.className = "artikel-card";
         const imageUrl = getImageWithPlaceholder(artikel.image);
         card.innerHTML = `
-                    <img src="${imageUrl}" alt="${artikel.title}" class="artikel-image">
+                    <img src="${imageUrl}" alt="${
+          artikel.title
+        }" class="artikel-image">
                     <div class="artikel-content">
                         <h3 class="artikel-title">${artikel.title}</h3>
                         <p class="artikel-excerpt">${artikel.excerpt}</p>
-                        <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
+                        <a href="${PAGE_URLS.artikelDetail(
+                          artikel.id
+                        )}" class="artikel-link">
                             Baca Selengkapnya →
                         </a>
                     </div>
@@ -1318,8 +1351,8 @@ async function initHomePage() {
           galeriItem.classList.add("galeri-item-video");
           galeriItem.innerHTML = `
             <video src="${item.video}" ${
-              imageUrl ? `poster="${imageUrl}"` : ""
-            } preload="metadata" controls class="galeri-video" data-background-music-interrupt></video>
+            imageUrl ? `poster="${imageUrl}"` : ""
+          } preload="metadata" controls class="galeri-video" data-background-music-interrupt></video>
             <div class="galeri-overlay">
               <div class="galeri-badge">Video</div>
               <h4 class="galeri-title">${item.title}</h4>
@@ -1412,7 +1445,9 @@ async function initInformasiPage() {
                 <div class="informasi-content">
                     <h3 class="informasi-title">${info.title}</h3>
                     <p class="informasi-excerpt">${info.excerpt}</p>
-                    <a href="${PAGE_URLS.informasiDetail(info.id)}" class="informasi-link">
+                    <a href="${PAGE_URLS.informasiDetail(
+                      info.id
+                    )}" class="informasi-link">
                         Lihat Detail →
                     </a>
                 </div>
@@ -1461,7 +1496,9 @@ async function initInformasiDetailPage() {
                 ${informasi.content}
             </div>
             <div class="back-link">
-                <a href="${PAGE_URLS.informasiList}" class="btn btn-primary">← Kembali ke Informasi</a>
+                <a href="${
+                  PAGE_URLS.informasiList
+                }" class="btn btn-primary">← Kembali ke Informasi</a>
             </div>
         `;
 
@@ -1525,7 +1562,9 @@ async function initArtikelPage() {
                         <span class="artikel-date">${formatDate(
                           artikel.date
                         )}</span>
-                        <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
+                        <a href="${PAGE_URLS.artikelDetail(
+                          artikel.id
+                        )}" class="artikel-link">
                             Baca Selengkapnya →
                         </a>
                     </div>
@@ -1584,10 +1623,13 @@ async function initArtikelPage() {
 // ===== Artikel Detail Page =====
 function buildArtikelMediaHTML(artikel) {
   const images = Array.isArray(artikel.images)
-    ? artikel.images.filter((url) => typeof url === "string" && url.trim() !== "")
+    ? artikel.images.filter(
+        (url) => typeof url === "string" && url.trim() !== ""
+      )
     : [];
   const hasImages = images.length > 0;
-  const hasVideo = typeof artikel.video === "string" && artikel.video.trim() !== "";
+  const hasVideo =
+    typeof artikel.video === "string" && artikel.video.trim() !== "";
 
   if (!hasImages && !hasVideo) {
     return "";
@@ -1599,32 +1641,39 @@ function buildArtikelMediaHTML(artikel) {
     const slides = images
       .map(
         (imageUrl, index) => `
-          <div class="artikel-slide${index === 0 ? " is-active" : ""}" data-index="${index}">
-            <img src="${imageUrl}" alt="${escapeHtml(
-              artikel.title
-            )} - gambar ${index + 1}" class="artikel-slide-image" loading="lazy" data-caption="${escapeHtml(
-              artikel.title
-            )}">
+          <div class="artikel-slide${
+            index === 0 ? " is-active" : ""
+          }" data-index="${index}">
+            <img src="${imageUrl}" alt="${escapeHtml(artikel.title)} - gambar ${
+          index + 1
+        }" class="artikel-slide-image" loading="lazy" data-caption="${escapeHtml(
+          artikel.title
+        )}">
           </div>
         `
       )
       .join("");
 
-    const controls = images.length > 1
-      ? `
+    const controls =
+      images.length > 1
+        ? `
         <button class="slider-control prev" type="button" aria-label="Sebelumnya">&#10094;</button>
         <button class="slider-control next" type="button" aria-label="Selanjutnya">&#10095;</button>
         <div class="slider-dots">
           ${images
             .map(
               (_, index) => `
-                <button class="slider-dot${index === 0 ? " is-active" : ""}" type="button" data-index="${index}" aria-label="Slide ${index + 1}"></button>
+                <button class="slider-dot${
+                  index === 0 ? " is-active" : ""
+                }" type="button" data-index="${index}" aria-label="Slide ${
+                index + 1
+              }"></button>
               `
             )
             .join("")}
         </div>
       `
-      : "";
+        : "";
 
     sliderHtml = `
       <div class="artikel-slider" data-slider>
@@ -1743,7 +1792,9 @@ function initMediaSliders(scope = document) {
     slider.addEventListener("mouseenter", () => stopAutoplay());
     slider.addEventListener("mouseleave", () => startAutoplay());
     slider.addEventListener("click", (event) => {
-      const isControl = event.target.closest(".slider-control") || event.target.closest(".slider-dot");
+      const isControl =
+        event.target.closest(".slider-control") ||
+        event.target.closest(".slider-dot");
       if (!isControl) {
         stopAutoplay(true);
       }
@@ -1846,11 +1897,15 @@ function renderRelatedArtikel(currentArtikel, artikelData = []) {
     const card = document.createElement("div");
     card.className = "artikel-card";
     card.innerHTML = `
-            <img src="${artikel.image}" alt="${artikel.title}" class="artikel-image">
+            <img src="${artikel.image}" alt="${
+      artikel.title
+    }" class="artikel-image">
             <div class="artikel-content">
                 <h3 class="artikel-title">${artikel.title}</h3>
                 <p class="artikel-excerpt">${artikel.excerpt}</p>
-                <a href="${PAGE_URLS.artikelDetail(artikel.id)}" class="artikel-link">
+                <a href="${PAGE_URLS.artikelDetail(
+                  artikel.id
+                )}" class="artikel-link">
                     Baca Selengkapnya →
                 </a>
             </div>
@@ -1979,7 +2034,9 @@ function pauseBackgroundMusic() {
     return;
   }
 
-  if (backgroundMusicPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
+  if (
+    backgroundMusicPlayer.getPlayerState() === window.YT.PlayerState.PLAYING
+  ) {
     backgroundMusicPlayer.pauseVideo();
     updateMusicToggleUI(false);
   }
@@ -2056,7 +2113,9 @@ function registerMediaInterruptors(scope = document) {
     return;
   }
 
-  const videos = scope.querySelectorAll("video[data-background-music-interrupt]");
+  const videos = scope.querySelectorAll(
+    "video[data-background-music-interrupt]"
+  );
   videos.forEach((video) => {
     if (video.dataset.musicBound === "true") {
       return;
