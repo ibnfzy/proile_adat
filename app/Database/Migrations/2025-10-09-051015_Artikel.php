@@ -18,6 +18,7 @@ class Artikel extends Migration
             'penulis_id'       => ['type' => 'INT', 'unsigned' => true],
             'created_at'       => ['type' => 'DATETIME', 'null' => true],
             'updated_at'       => ['type' => 'DATETIME', 'null' => true],
+            'video' => ['type' => 'TEXT', 'null' => true]
         ]);
 
         $this->forge->addKey('id', true);
