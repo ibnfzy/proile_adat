@@ -1212,6 +1212,27 @@ body {
   margin-bottom: 2rem;
 }
 
+.informasi-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.informasi-meta-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.informasi-meta .meta-label {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .info-icon-large {
   font-size: 5rem;
   margin-bottom: 1rem;

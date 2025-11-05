@@ -1484,10 +1484,26 @@ async function initInformasiDetailPage() {
       breadcrumbTitle.textContent = informasi.title;
     }
 
+    const createdAtRaw = informasi.created_at || informasi.createdAt;
+    const updatedAtRaw = informasi.updated_at || informasi.updatedAt;
+
+    const formattedCreatedAt = formatDateTimeWithClock(createdAtRaw) || "-";
+    const formattedUpdatedAt = formatDateTimeWithClock(updatedAtRaw) || "-";
+
     detailContainer.innerHTML = `
             <div class="informasi-header">
                 <div class="info-icon-large">${informasi.icon || ""}</div>
                 <h1>${informasi.title}</h1>
+            </div>
+            <div class="informasi-meta">
+                <div class="informasi-meta-item">
+                    <span class="meta-label">Tanggal Buat:</span>
+                    <span class="meta-value">${formattedCreatedAt}</span>
+                </div>
+                <div class="informasi-meta-item">
+                    <span class="meta-label">Tanggal Update:</span>
+                    <span class="meta-value">${formattedUpdatedAt}</span>
+                </div>
             </div>
             <img src="${informasi.image}" alt="${
       informasi.title
