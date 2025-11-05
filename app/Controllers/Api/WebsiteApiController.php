@@ -63,7 +63,7 @@ class WebsiteApiController extends BaseController
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        $data = array_map(fn (array $informasi) => [
+        $data = array_map(fn(array $informasi) => [
             'id'      => (int) ($informasi['id'] ?? 0),
             'title'   => (string) ($informasi['judul'] ?? ''),
             'slug'    => (string) ($informasi['slug'] ?? ''),
@@ -72,6 +72,8 @@ class WebsiteApiController extends BaseController
             'content' => (string) ($informasi['konten'] ?? ''),
             'image'   => $this->buildImageUrl($informasi['gambar'] ?? null),
             'date'    => $this->formatDate($informasi['created_at'] ?? null),
+            'created_at' => $informasi['created_at'],
+            'updated_at' => $informasi['updated_at']
         ], $informasiList);
 
         return $this->response->setJSON($data);
@@ -83,7 +85,7 @@ class WebsiteApiController extends BaseController
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        $data = array_map(fn (array $photo) => [
+        $data = array_map(fn(array $photo) => [
             'id'          => (int) ($photo['id'] ?? 0),
             'title'       => (string) ($photo['judul'] ?? ''),
             'image'       => $this->buildMediaUrl($photo['gambar'] ?? null),
